@@ -3,7 +3,7 @@ import numpy
 import math
 import random
 
-DEFAULT_ARRIVAL_RATE = 50.0
+DEFAULT_ARRIVAL_RATE = 30.0
 DEFAULT_PACKET_MEAN = 100
 DEFAULT_PACKET_DEV = 20
 
