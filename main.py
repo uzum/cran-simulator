@@ -1,10 +1,8 @@
 import simpy
+from random import expovariate
 
-from config import *
-from entities.remote_radio_head import RemoteRadioHead
-
+from topology import Topology
 env = simpy.Environment()
-for i in range(RRH_NUMBER):
-    rrh = RemoteRadioHead(env, 'rrh#' + str(i))
+topo = Topology(env)
 
 env.run(until=100)
