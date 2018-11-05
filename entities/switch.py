@@ -1,16 +1,20 @@
 import simpy
 
 class Switch(object):
-    def __init__(self, env, host, type, rate=float('inf'), qlimit=None, limit_bytes=True, debug=False):
+    def __init__(self, env, host, type, qlimit=None, limit_bytes=True, debug=False):
         self.store = simpy.Store(env)
         self.host = host
         self.type = type
-        self.rate = rate
+        self.qlimit = qlimit
+        if (self.type == 'external'):
+            self.rate = 2000
+            self.qlimit = 50000
+        else:
+            self.rate = float('inf')
         self.env = env
         self.outs = []
         self.packets_rec = 0
         self.packets_drop = 0
-        self.qlimit = qlimit
         self.limit_bytes = limit_bytes
         self.byte_size = 0  # Current size of the queue in bytes
         self.debug = debug

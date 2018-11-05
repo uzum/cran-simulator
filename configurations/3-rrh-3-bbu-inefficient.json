@@ -1,0 +1,19 @@
+{
+  "remote_radio_heads": [
+    { "id": 0, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [11, 12] },
+    { "id": 1, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [11, 12] },
+    { "id": 3, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [13] }
+  ],
+  "hypervisors": [{
+    "id": 8,
+    "baseband_units": [
+      { "id": 11 }
+    ]
+  }, {
+    "id": 9,
+    "baseband_units": [
+      { "id": 12 },
+      { "id": 13 }
+    ]
+  }]
+}

@@ -8,7 +8,7 @@ DEFAULT_PACKET_MEAN = 100
 DEFAULT_PACKET_DEV = 20
 
 class RemoteRadioHead(object):
-    def __init__(self, env, id, initial_delay=0, finish=float("inf")):
+    def __init__(self, env, id, initial_delay=0, finish=100):
         self.id = id
         self.env = env
         self.initial_delay = initial_delay

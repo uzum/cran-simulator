@@ -7,19 +7,22 @@ from entities.switch import Switch
 from forwarding.forwarding import Forwarding
 
 class Topology(object):
-    def __init__(self, env):
+    def __init__(self, env, configuration_path):
         self.env = env
+        self.configuration_path = configuration_path
+        self.forwarding = Forwarding(self.env, self)
+
         self.rrhs = []
         self.hypervisors = []
         self.external_switch = None
-        self.forwarding = Forwarding(self.env, self)
+
         self.setup()
 
     def setup(self):
         self.external_switch = Switch(self.env, 'physical', 'external')
         self.external_switch.set_forwarding_function(self.forwarding.forwarding_function)
 
-        with open('topology/configuration.json') as f:
+        with open(self.configuration_path) as f:
             configuration = json.load(f)
 
         for remote_radio_head in configuration['remote_radio_heads']:
