@@ -1,7 +1,7 @@
 import simpy
 
 class Switch(object):
-    def __init__(self, env, host, type, rate=2000000.0, qlimit=None, limit_bytes=True, debug=False):
+    def __init__(self, env, host, type, rate=float('inf'), qlimit=None, limit_bytes=True, debug=False):
         self.store = simpy.Store(env)
         self.host = host
         self.type = type

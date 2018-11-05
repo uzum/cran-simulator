@@ -1,7 +1,8 @@
 import simpy
 from random import expovariate
 
-from topology import Topology
+from topology.topology import Topology
+
 env = simpy.Environment()
 topo = Topology(env)
 
@@ -16,6 +17,10 @@ for hypervisor in topo.hypervisors:
     print('switch in hypervisor: %d' % hypervisor.id)
     print('packets rec: %d' % hypervisor.switch.packets_rec)
     print('packets drop: %d' % hypervisor.switch.packets_drop)
+
+print('external switch:')
+print('packets rec: %d' % topo.external_switch.packets_rec)
+print('packets drop: %d' % topo.external_switch.packets_drop)
 
 for rrh in topo.rrhs:
     print('rrh id: %d' % rrh.id)

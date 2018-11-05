@@ -20,6 +20,15 @@ class RemoteRadioHead(object):
         self.packet_mean = DEFAULT_PACKET_MEAN
         self.packet_dev = DEFAULT_PACKET_DEV
 
+    def set_arrival_rate(self, rate):
+        self.arrival_rate = rate
+
+    def set_packet_mean(self, mean):
+        self.packet_mean = mean
+
+    def set_packet_dev(self, dev):
+        self.packet_dev = dev
+
     def next_poisson(self):
         return -math.log(1.0 - random.random()) / self.arrival_rate
 
@@ -31,5 +40,4 @@ class RemoteRadioHead(object):
         while self.env.now < self.finish:
             yield self.env.timeout(self.next_poisson())
             self.packets_sent += 1
-            print('sending packet from rrh#%d', self.id)
             self.out.put(UDPPacket(self.env.now, self.next_gaussian(), self.packets_sent, src = self.id))
