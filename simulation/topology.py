@@ -1,5 +1,3 @@
-import json
-
 from entities.remote_radio_head import RemoteRadioHead
 from entities.hypervisor import Hypervisor
 from entities.baseband_unit import BasebandUnit
@@ -7,23 +5,19 @@ from entities.switch import Switch
 from forwarding.forwarding import Forwarding
 
 class Topology(object):
-    def __init__(self, env, configuration_path):
+    def __init__(self, env, configuration):
         self.env = env
-        self.configuration_path = configuration_path
         self.forwarding = Forwarding(self.env, self)
 
         self.rrhs = []
         self.hypervisors = []
         self.external_switch = None
 
-        self.setup()
+        self.setup(configuration)
 
-    def setup(self):
+    def setup(self, configuration):
         self.external_switch = Switch(self.env, 'physical', 'external')
         self.external_switch.set_forwarding_function(self.forwarding.forwarding_function)
-
-        with open(self.configuration_path) as f:
-            configuration = json.load(f)
 
         for remote_radio_head in configuration['remote_radio_heads']:
             rrh_object = RemoteRadioHead(self.env, remote_radio_head['id'])

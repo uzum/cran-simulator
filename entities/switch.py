@@ -1,16 +1,15 @@
 import simpy
+from simulation.sim_parameters import SimulationParams
 
 class Switch(object):
-    def __init__(self, env, host, type, qlimit=None, limit_bytes=True, debug=False):
+    def __init__(self, env, host, type, rate=float('inf'), qlimit=None, limit_bytes=True, debug=False):
         self.store = simpy.Store(env)
         self.host = host
         self.type = type
+        self.rate = rate
+        if (type == 'internal'):
+            self.rate = SimulationParams.VIRTUAL_SWITCH_BITRATE
         self.qlimit = qlimit
-        if (self.type == 'external'):
-            self.rate = 2000
-            self.qlimit = 50000
-        else:
-            self.rate = float('inf')
         self.env = env
         self.outs = []
         self.packets_rec = 0

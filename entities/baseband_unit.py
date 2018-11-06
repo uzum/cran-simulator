@@ -1,7 +1,8 @@
 import simpy
+from simulation.sim_parameters import SimulationParams
 
 class BasebandUnit(object):
-    def __init__(self, env, id, rec_arrivals=True, absolute_arrivals=False, rec_waits=True, debug=False, selector=None):
+    def __init__(self, env, id, rec_arrivals=True, absolute_arrivals=False, rec_waits=True, selector=None):
         self.store = simpy.Store(env)
         self.env = env
         self.id = id
@@ -10,7 +11,7 @@ class BasebandUnit(object):
         self.absolute_arrivals = absolute_arrivals
         self.waits = []
         self.arrivals = []
-        self.debug = debug
+        self.debug = SimulationParams.BBU_DEBUG
         self.packets_rec = 0
         self.bytes_rec = 0
         self.selector = selector

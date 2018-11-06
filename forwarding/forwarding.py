@@ -1,4 +1,5 @@
 import copy
+from .transmission import Transmission
 
 def find(list, fn):
     for item in list:
@@ -30,11 +31,12 @@ class Forwarding(object):
             for hypervisor in self.topology.hypervisors:
                 for bbu in hypervisor.bbus:
                     if bbu.id in mapping.baseband_units:
+                        # introduce external to internal delay:
                         if (forwardedOnce):
-                            packetClone = copy.copy(packet)
-                            hypervisor.switch.put(packetClone)
+                            packet_clone = copy.copy(packet)
+                            tx = Transmission(self.env, switch, hypervisor.switch, packet_clone)
                         else:
-                            hypervisor.switch.put(packet)
+                            tx = Transmission(self.env, switch, hypervisor.switch, packet)
                             # we have forwarded the packet once, further deduplication will be made in internal switch
                             forwardedOnce = True
                             break
@@ -45,8 +47,8 @@ class Forwarding(object):
             for out in hypervisor.switch.outs:
                 if out.id in mapping.baseband_units:
                     if (forwardedOnce):
-                        packetClone = copy.copy(packet)
-                        out.put(packetClone)
+                        packet_clone = copy.copy(packet)
+                        tx = Transmission(self.env, switch, out, packet_clone)
                     else:
-                        out.put(packet)
+                        tx = Transmission(self.env, switch, out, packet)
                         forwardedOnce = True

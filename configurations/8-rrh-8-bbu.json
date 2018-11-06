@@ -1,33 +1,36 @@
 {
-  "remote_radio_heads": [
-    { "id": 0, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [11, 12] },
-    { "id": 1, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [12] },
-    { "id": 2, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [13] },
-    { "id": 3, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [14] },
-    { "id": 4, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [15] },
-    { "id": 5, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [16] },
-    { "id": 6, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [17] },
-    { "id": 7, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [18] }
-  ],
-  "hypervisors": [{
-    "id": 8,
-    "baseband_units": [
-      { "id": 11 },
-      { "id": 12 }
-    ]
-  }, {
-    "id": 9,
-    "baseband_units": [
-      { "id": 13 },
-      { "id": 14 },
-      { "id": 15 }
-    ]
-  }, {
-    "id": 10,
-    "baseband_units": [
-      { "id": 16 },
-      { "id": 17 },
-      { "id": 18 }
-    ]
-  }]
+  "simulation": {},
+  "topology": {
+    "remote_radio_heads": [
+      { "id": 0, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [11, 12] },
+      { "id": 1, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [12] },
+      { "id": 2, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [13] },
+      { "id": 3, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [14] },
+      { "id": 4, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [15] },
+      { "id": 5, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [16] },
+      { "id": 6, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [17] },
+      { "id": 7, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [18] }
+    ],
+    "hypervisors": [{
+      "id": 8,
+      "baseband_units": [
+        { "id": 11 },
+        { "id": 12 }
+      ]
+    }, {
+      "id": 9,
+      "baseband_units": [
+        { "id": 13 },
+        { "id": 14 },
+        { "id": 15 }
+      ]
+    }, {
+      "id": 10,
+      "baseband_units": [
+        { "id": 16 },
+        { "id": 17 },
+        { "id": 18 }
+      ]
+    }]
+  }
 }
