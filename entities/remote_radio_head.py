@@ -33,4 +33,4 @@ class RemoteRadioHead(object):
         while self.env.now < self.finish:
             yield self.env.timeout(next_poisson(self.arrival_rate))
             self.packets_sent += 1
-            self.out.put(UDPPacket(self.env.now, next_gaussian(self.packet_mean, self.packet_dev), self.packets_sent, src = self.id))
+            self.out.put(UDPPacket(self.env.now, abs(next_gaussian(self.packet_mean, self.packet_dev)), self.packets_sent, src = self.id))

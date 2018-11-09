@@ -12,9 +12,11 @@ class Transmission(object):
 
     def get_tx_duration(self):
         if (self.source.type == 'external'):
-            return next_gaussian(float(self.packet.size) * SimulationParams.EXTERNAL_TRANSMISSION_COFACTOR, 1)
+            mean = float(self.packet.size) * SimulationParams.EXTERNAL_TRANSMISSION_COFACTOR
         else:
-            return next_gaussian(float(self.packet.size) * SimulationParams.INTERNAL_TRANSMISSION_COFACTOR, 0.1)
+            mean = float(self.packet.size) * SimulationParams.INTERNAL_TRANSMISSION_COFACTOR
+
+        return abs(next_gaussian(mean, mean / 10.0))
 
     def run(self):
         tx_duration = self.get_tx_duration()

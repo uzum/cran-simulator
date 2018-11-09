@@ -12,7 +12,7 @@ class Simulation(object):
         self.topology = Topology(self.env, configuration['topology'])
 
     def run(self):
-        self.env.run()
+        self.env.run(until=SimulationParams.SIMULATION_TIME)
 
     def report(self):
         print('-------BBU STATS----------')

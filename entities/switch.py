@@ -9,7 +9,7 @@ class Switch(object):
         self.rate = rate
         if (type == 'internal'):
             self.rate = SimulationParams.VIRTUAL_SWITCH_BITRATE
-        self.qlimit = qlimit
+        self.qlimit = SimulationParams.VIRTUAL_SWITCH_QLIMIT
         self.env = env
         self.outs = []
         self.packets_rec = 0
