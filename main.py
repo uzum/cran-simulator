@@ -1,14 +1,29 @@
 import argparse
 import json
+from os import listdir
 from simulation.simulation import Simulation
 
 parser = argparse.ArgumentParser()
-parser.add_argument('config')
+parser.add_argument('--config')
+parser.add_argument('--folder')
 args = parser.parse_args()
 
-with open(args.config) as f:
-    configuration = json.load(f)
+if (args.config):
+    with open(args.config) as f:
+        configuration = json.load(f)
 
-sim = Simulation(configuration)
-sim.run()
-sim.report()
+        sim = Simulation(configuration)
+        sim.run()
+        with open(args.config + '.out', 'w+') as fout:
+            sim.report(fout)
+
+elif (args.folder):
+    for conf_file in listdir(args.folder):
+        if (conf_file.endswith('json')):
+            with open(args.folder + '/' + conf_file) as f:
+                configuration = json.load(f)
+
+                sim = Simulation(configuration)
+                sim.run()
+                with open(args.folder + '/' + conf_file + '.out', 'w+') as fout:
+                    sim.report(fout)
