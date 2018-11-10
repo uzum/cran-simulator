@@ -15,6 +15,58 @@ class Topology(object):
 
         self.setup(configuration)
 
+    def update_load(self, entry):
+        for rrh in self.rrhs:
+            if (rrh.id == entry['id']):
+                if 'arrival_rate' in entry:
+                    rrh.set_arrival_rate(entry['arrival_rate'])
+                if 'packet_mean' in entry:
+                    rrh.set_packet_mean(entry['packet_mean'])
+                if 'packet_dev' in entry:
+                    rrh.set_packet_dev(entry['packet_dev'])
+
+    def get_current_load(self):
+        total = 0
+        for rrh in self.rrhs:
+            total += (rrh.arrival_rate * rrh.packet_mean * len(self.forwarding.get_mapping(rrh.id)))
+        return total
+
+    def get_average_delay(self, baseband_unit):
+        return sum(baseband_unit.arrivals) / len(baseband_unit.arrivals)
+
+    def get_average_wait(self, baseband_unit):
+        return sum(baseband_unit.waits) / len(baseband_unit.waits)
+
+    def get_overall_delay(self):
+        total = 0
+        bbu_count = 0
+        for hypervisor in self.hypervisors:
+            for bbu in hypervisor.bbus:
+                total += self.get_average_delay(bbu)
+                bbu_count += 1
+        return total / bbu_count
+
+    def get_overall_wait(self):
+        total = 0
+        bbu_count = 0
+        for hypervisor in self.hypervisors:
+            for bbu in hypervisor.bbus:
+                total += self.get_average_wait(bbu)
+                bbu_count += 1
+        return total / bbu_count
+
+    def get_drop_rate(self, switch):
+        total = switch.packets_drop + switch.packets_rec
+        return switch.packets_drop / total
+
+    def get_overall_drop_rate(self):
+        total = 0
+        total_drop = 0
+        for hypervisor in self.hypervisors:
+            total += (hypervisor.switch.packets_rec + hypervisor.switch.packets_drop)
+            total_drop += hypervisor.switch.packets_drop
+        return total_drop / total
+
     def setup(self, configuration):
         self.external_switch = Switch(self.env, 'physical', 'external')
         self.external_switch.set_forwarding_function(self.forwarding.forwarding_function)

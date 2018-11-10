@@ -12,10 +12,10 @@ if (args.config):
     with open(args.config) as f:
         configuration = json.load(f)
 
-        sim = Simulation(configuration)
-        sim.run()
         with open(args.config + '.out', 'w+') as fout:
-            sim.report(fout)
+            sim = Simulation(configuration, fout)
+            sim.run()
+            sim.report()
 
 elif (args.folder):
     for conf_file in listdir(args.folder):

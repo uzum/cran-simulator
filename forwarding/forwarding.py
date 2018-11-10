@@ -21,6 +21,11 @@ class Forwarding(object):
     def add_mapping(self, remote_radio_head, baseband_units):
         self.mappings.append(Mapping(remote_radio_head, baseband_units))
 
+    def get_mapping(self, remote_radio_head):
+        for mapping in self.mappings:
+            if mapping.remote_radio_head == remote_radio_head:
+                return mapping.baseband_units
+
     def forwarding_function(self, switch, packet):
         mapping = find(self.mappings, lambda m: m.remote_radio_head == packet.src)
         if (mapping == None):
