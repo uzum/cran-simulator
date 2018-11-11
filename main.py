@@ -23,7 +23,7 @@ elif (args.folder):
             with open(args.folder + '/' + conf_file) as f:
                 configuration = json.load(f)
 
-                sim = Simulation(configuration)
-                sim.run()
                 with open(args.folder + '/' + conf_file + '.out', 'w+') as fout:
-                    sim.report(fout)
+                    sim = Simulation(configuration, fout)
+                    sim.run()
+                    sim.report()

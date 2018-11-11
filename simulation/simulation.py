@@ -18,7 +18,7 @@ class Simulation(object):
         else:
             current = 0
             self.output.write('------ STEP STATS ------\n')
-            self.output.write('Time\tLoad\tWait\tDelay\tDrop\n')
+            self.output.write('Time\tLoad\tRepl.\tCost\tWait\tDelay\tDrop\n')
             while(current < SimulationParams.SIMULATION_TIME):
                 current += SimulationParams.STEP_TIME
                 if ('updates' in self.configuration):
@@ -34,9 +34,11 @@ class Simulation(object):
                         self.topology.update_load(entry)
 
     def step_report(self):
-        self.output.write('%d\t%d\t%f\t%f\t%f\n' % (
+        self.output.write('%d\t%d\t%f\t%f\t%f\t%f\t%f\n' % (
             self.env.now,
             self.topology.get_current_load(),
+            self.topology.get_replication_factor(),
+            self.topology.get_transmission_cost(),
             self.topology.get_overall_wait(),
             self.topology.get_overall_delay(),
             self.topology.get_overall_drop_rate()
@@ -63,6 +65,7 @@ class Simulation(object):
         self.output.write('packets rec: %d\n' % self.topology.external_switch.packets_rec)
         self.output.write('packets drop: %d\n' % self.topology.external_switch.packets_drop)
         self.output.write('drop rate: %f\n' % self.topology.get_drop_rate(self.topology.external_switch))
+        self.output.write('replication factor: %f\n' % self.topology.get_replication_factor())
         self.output.write('------------------------\n\n')
 
         self.output.write('-------OVS-SWITCHES-------' + '\n')

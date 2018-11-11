@@ -25,11 +25,22 @@ class Topology(object):
                 if 'packet_dev' in entry:
                     rrh.set_packet_dev(entry['packet_dev'])
 
+    def get_transmission_cost(self):
+        cost = self.forwarding.get_transmission_cost()
+        self.forwarding.reset_transmission_cost()
+        return cost
+
     def get_current_load(self):
         total = 0
         for rrh in self.rrhs:
             total += (rrh.arrival_rate * rrh.packet_mean * len(self.forwarding.get_mapping(rrh.id)))
         return total
+
+    def get_replication_factor(self):
+        total_received = 0
+        for hypervisor in self.hypervisors:
+            total_received += hypervisor.switch.packets_rec
+        return total_received / self.external_switch.packets_rec
 
     def get_average_delay(self, baseband_unit):
         return sum(baseband_unit.arrivals) / len(baseband_unit.arrivals)

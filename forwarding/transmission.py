@@ -18,6 +18,12 @@ class Transmission(object):
 
         return abs(next_gaussian(mean, mean / 10.0))
 
+    def get_tx_cost(self):
+        if (self.source.type == 'external'):
+            return float(self.packet.size) * SimulationParams.EXTERNAL_TRANSMISSION_COST
+        else:
+            return float(self.packet.size) * SimulationParams.INTERNAL_TRANSMISSION_COST
+
     def run(self):
         tx_duration = self.get_tx_duration()
         yield self.env.timeout(tx_duration)

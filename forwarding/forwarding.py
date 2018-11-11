@@ -17,6 +17,7 @@ class Forwarding(object):
         self.env = env
         self.mappings = []
         self.topology = topology
+        self.transmission_cost = 0
 
     def add_mapping(self, remote_radio_head, baseband_units):
         self.mappings.append(Mapping(remote_radio_head, baseband_units))
@@ -25,6 +26,12 @@ class Forwarding(object):
         for mapping in self.mappings:
             if mapping.remote_radio_head == remote_radio_head:
                 return mapping.baseband_units
+
+    def get_transmission_cost(self):
+        return self.transmission_cost
+
+    def reset_transmission_cost(self):
+        self.transmission_cost = 0
 
     def forwarding_function(self, switch, packet):
         mapping = find(self.mappings, lambda m: m.remote_radio_head == packet.src)
@@ -39,9 +46,9 @@ class Forwarding(object):
                         # introduce external to internal delay:
                         if (forwardedOnce):
                             packet_clone = copy.copy(packet)
-                            tx = Transmission(self.env, switch, hypervisor.switch, packet_clone)
+                            self.transmission_cost += Transmission(self.env, switch, hypervisor.switch, packet_clone).get_tx_cost()
                         else:
-                            tx = Transmission(self.env, switch, hypervisor.switch, packet)
+                            self.transmission_cost += Transmission(self.env, switch, hypervisor.switch, packet).get_tx_cost()
                             # we have forwarded the packet once, further deduplication will be made in internal switch
                             forwardedOnce = True
                             break
@@ -53,7 +60,7 @@ class Forwarding(object):
                 if out.id in mapping.baseband_units:
                     if (forwardedOnce):
                         packet_clone = copy.copy(packet)
-                        tx = Transmission(self.env, switch, out, packet_clone)
+                        self.transmission_cost += Transmission(self.env, switch, out, packet_clone).get_tx_cost()
                     else:
-                        tx = Transmission(self.env, switch, out, packet)
+                        self.transmission_cost += Transmission(self.env, switch, out, packet).get_tx_cost()
                         forwardedOnce = True
