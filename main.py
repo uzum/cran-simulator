@@ -27,3 +27,4 @@ elif (args.folder):
                     sim = Simulation(configuration, fout)
                     sim.run()
                     sim.report()
+                    print('completed %s' % conf_file)

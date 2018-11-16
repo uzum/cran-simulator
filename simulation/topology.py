@@ -15,15 +15,26 @@ class Topology(object):
 
         self.setup(configuration)
 
-    def update_load(self, entry):
+    def update_load(self, rrh_id, arrival_rate = None, packet_mean = None, packet_dev = None):
         for rrh in self.rrhs:
-            if (rrh.id == entry['id']):
-                if 'arrival_rate' in entry:
-                    rrh.set_arrival_rate(entry['arrival_rate'])
-                if 'packet_mean' in entry:
-                    rrh.set_packet_mean(entry['packet_mean'])
-                if 'packet_dev' in entry:
-                    rrh.set_packet_dev(entry['packet_dev'])
+            if (rrh.id == rrh_id):
+                if arrival_rate is not None:
+                    rrh.set_arrival_rate(arrival_rate)
+                if packet_mean is not None:
+                    rrh.set_packet_mean(packet_mean)
+                if packet_dev is not None:
+                    rrh.set_packet_dev(packet_dev)
+
+    def migrate(self, bbu_id, target_hypervisor_id):
+        target_hypervisor = [hv for hv in self.hypervisors if hv.id == target_hypervisor_id][0]
+        if (target_hypervisor is None):
+            raise "Target hypervisor not found with the given id"
+
+        for hypervisor in self.hypervisors:
+            subject_bbu = hypervisor.find_baseband_unit(bbu_id)
+            if (subject_bbu is not None):
+                hypervisor.remove_baseband_unit(subject_bbu)
+                target_hypervisor.add_baseband_unit(subject_bbu)
 
     def get_transmission_cost(self):
         cost = self.forwarding.get_transmission_cost()
@@ -43,9 +54,11 @@ class Topology(object):
         return total_received / self.external_switch.packets_rec
 
     def get_average_delay(self, baseband_unit):
+        if (len(baseband_unit.arrivals) == 0): return 0.0
         return sum(baseband_unit.arrivals) / len(baseband_unit.arrivals)
 
     def get_average_wait(self, baseband_unit):
+        if (len(baseband_unit.waits) == 0): return 0.0
         return sum(baseband_unit.waits) / len(baseband_unit.waits)
 
     def get_overall_delay(self):

@@ -1,5 +1,6 @@
 import simpy
 from .topology import Topology
+from .algorithm import Algorithm
 from .sim_parameters import SimulationParams
 
 class Simulation(object):
@@ -11,18 +12,22 @@ class Simulation(object):
             setattr(SimulationParams, key, configuration['simulation'][key])
 
         self.topology = Topology(self.env, configuration['topology'])
+        self.algorithm = Algorithm(self.topology, self.configuration)
 
     def run(self):
         if (SimulationParams.STEP_TIME == 0):
             self.env.run(until=SimulationParams.SIMULATION_TIME)
         else:
             current = 0
-            self.output.write('------ STEP STATS ------\n')
             self.output.write('Time\tLoad\tRepl.\tCost\tWait\tDelay\tDrop\n')
+            self.output.write('------ STEP STATS ------\n')
             while(current < SimulationParams.SIMULATION_TIME):
                 current += SimulationParams.STEP_TIME
                 if ('updates' in self.configuration):
                     self.process_updates()
+                if ('use_algorithm' in self.configuration):
+                    self.algorithm.reassign()
+
                 self.env.run(until = current)
                 self.step_report()
 
@@ -31,10 +36,15 @@ class Simulation(object):
             if (key == 'load'):
                 for entry in self.configuration['updates']['load']:
                     if (entry['time'] == self.env.now):
-                        self.topology.update_load(entry)
+                        self.topology.update_load(entry['id'], entry['arrival_rate'])
+            elif (key == 'migration'):
+                for entry in self.configuration['updates']['migration']:
+                    if (entry['time'] == self.env.now):
+                        self.topology.migrate(entry['id'], entry['hypervisor'])
 
     def step_report(self):
-        self.output.write('%d\t%d\t%f\t%f\t%f\t%f\t%f\n' % (
+        self.output.write('%s\t%d\t%d\t%f\t%f\t%f\t%f\t%f\n' % (
+            SimulationParams.KEYWORD,
             self.env.now,
             self.topology.get_current_load(),
             self.topology.get_replication_factor(),

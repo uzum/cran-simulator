@@ -28,14 +28,17 @@ class Switch(object):
         self.forwarding_function(self, packet)
 
     def add_port(self, out):
-        self.outs.append(out);
+        self.outs.append(out)
+
+    def remove_port(self, out):
+        self.outs.remove(out)
 
     def run(self):
         while True:
             packet = (yield self.store.get())
             self.busy = 1
             self.byte_size -= packet.size
-            yield self.env.timeout(packet.size*8.0/self.rate)
+            yield self.env.timeout(packet.size/self.rate)
             self.send_packet(packet)
             self.busy = 0
             if self.debug:
