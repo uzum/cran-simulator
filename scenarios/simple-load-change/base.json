@@ -1,0 +1,43 @@
+{
+  "simulation": {
+    "VIRTUAL_SWITCH_RATE": 30000,
+    "STEP_TIME": 10,
+    "VIRTUAL_SWITCH_QLIMIT": 500,
+    "KEYWORD": "static"
+  },
+  "updates": {
+    "load": [
+      { "time": 100, "id": 1, "arrival_rate": 20.0 },
+      { "time": 100, "id": 2, "arrival_rate": 20.0 },
+      { "time": 120, "id": 1, "arrival_rate": 30.0 },
+      { "time": 120, "id": 2, "arrival_rate": 30.0 },
+      { "time": 130, "id": 1, "arrival_rate": 50.0 },
+      { "time": 130, "id": 2, "arrival_rate": 50.0 },
+      { "time": 140, "id": 1, "arrival_rate": 100.0 },
+      { "time": 140, "id": 2, "arrival_rate": 100.0 },
+      { "time": 150, "id": 1, "arrival_rate": 150.0 },
+      { "time": 150, "id": 2, "arrival_rate": 150.0 }
+    ]
+  },
+  "topology": {
+    "remote_radio_heads": [
+      { "id": 0, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [0, 1] },
+      { "id": 1, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [0, 1, 2] },
+      { "id": 2, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [1, 2, 3] },
+      { "id": 3, "arrival_rate": 10.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [2, 3] }
+    ],
+    "hypervisors": [{
+      "id": 0,
+      "baseband_units": [
+        { "id": 0 },
+        { "id": 1 }
+      ]
+    }, {
+      "id": 1,
+      "baseband_units": [
+        { "id": 2 },
+        { "id": 3 }
+      ]
+    }]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "simulation": {
+    "VIRTUAL_SWITCH_RATE": 50000,
+    "STEP_TIME": 10
+  },
+  "topology": {
+    "remote_radio_heads": [
+      { "id": 0, "arrival_rate": 100.0, "packet_mean": 100, "packet_dev": 20, "baseband_units": [0] }
+    ],
+    "hypervisors": [{
+      "id": 0,
+      "baseband_units": [
+        { "id": 0 }
+      ]
+    }]
+  }
+}
