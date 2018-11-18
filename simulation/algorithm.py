@@ -1,6 +1,10 @@
+import numpy
+import math
+
 class Bin():
-    def __init__(self, capacity):
+    def __init__(self, hypervisor, capacity):
         self.capacity = capacity
+        self.hypervisor = hypervisor
         self.total_capacity = capacity
         self.elements = []
 
@@ -15,8 +19,9 @@ class Bin():
         return 'Bin %d/%d [%s]' % (self.total_capacity - self.capacity, self.total_capacity, ', '.join(map(str, self.elements)))
 
 class Element():
-    def __init__(self, value):
+    def __init__(self, cluster, value):
         self.value = value
+        self.cluster = cluster
 
     def __lt__(self, other):
         return self.value < other.value
@@ -27,28 +32,110 @@ class Element():
     def __str__(self):
         return "Element %d" % (self.value)
 
-class Algorithm():
-    def DEBUG = True
+class Cluster():
+    def __init__(self, baseband_units = []):
+        self.baseband_units = baseband_units
 
-    def assign(bins, elements):
-        return Algorithm.best_fit_decreasing(
-            list(map(lambda capacity: Bin(capacity), bins)),
-            list(map(lambda value: Element(value), elements))
-        )
+    def add(self, baseband_unit):
+        self.baseband_units.append(baseband_unit)
+
+    def has(self, baseband_unit):
+        return baseband_unit in self.baseband_units
+
+    def split(self):
+        if (len(self.baseband_units) == 1):
+            raise "Cannot split a cluster with length 1"
+        half = math.floor(len(self.baseband_units) / 2)
+        return [
+            Cluster(self.baseband_units[0:half]),
+            Cluster(self.baseband_units[half:])
+        ]
+
+    def __repr__(self):
+        return "[%s]" % ', '.join(map(str, self.baseband_units))
+
+class Algorithm():
+    DEBUG = True
+
+    def get_assignment(topology):
+        bins = list(map(lambda hypervisor: Bin(hypervisor, hypervisor.switch.rate), topology.hypervisors))
+        clusters = Algorithm.get_bbu_clusters(topology)
+        elements = list(map(lambda cluster: Element(cluster, topology.get_cluster_load(cluster)), clusters))
+        residuals = []
+
+        while(len(elements) > 0):
+            result = Algorithm.best_fit_decreasing(bins, elements)
+            bins = result['bins']
+            residuals = result['residuals']
+
+            elements = []
+            for element in residuals:
+                if (len(element.cluster.baseband_units) > 1):
+                    children = element.cluster.split()
+                    elements.append(Element(children[0], topology.get_cluster_load(children[0])))
+                    elements.append(Element(children[1], topology.get_cluster_load(children[1])))
+
+        return {
+            'bins': bins,
+            'residuals': residuals
+        }
+
+    def get_bbu_clusters(topology):
+        bbus = {}
+        for hypervisor in topology.hypervisors:
+            for bbu in hypervisor.bbus:
+                bbus[bbu.id] = bbu
+
+        size = len(bbus)
+
+        neighbor_matrix = numpy.zeros((size, size))
+
+        for i in bbus:
+            for j in bbus:
+                neighbor_matrix[i][j] = topology.get_common_load(bbus[i], bbus[j])
+
+        # for i in range(size):
+        #     print('\t'.join(map(str, neighbor_matrix[i])))
+
+        clusters = []
+        for i in bbus:
+            # analyzing for bbus[i]
+            placed = False
+            # if we have a cluster with a non-zero score neighbor, put it into that cluster
+            for j in range(i):
+                if j not in bbus: continue
+                if i == j: continue
+
+                if (neighbor_matrix[i][j] > 0):
+                    # found a neighbor with a non-zero score
+                    # find a cluster where this neighbor is present
+                    for cluster in clusters:
+                        if (cluster.has(bbus[j]) and not cluster.has(bbus[i])):
+                            cluster.add(bbus[i])
+                            placed = True
+                            break
+            # still not placed
+            # - either there was no neighbor with positive score
+            # - or no neighbor in a previously created cluster
+            # time to create a new cluster
+            if (placed is False):
+                clusters.append(Cluster([bbus[i]]))
+
+        return clusters
 
     def best_fit_decreasing(bins, elements):
         bins.sort()
         elements.sort(reverse=True)
+        residuals = []
 
         for element in elements:
-            if (Algorithm.DEBUG):
-                print('\n\n\nnew iteration, placing %d' % element.value)
-                print('\n'.join(map(str, bins)))
+            found = False
 
             for idx in range(len(bins)):
                 target_bin = bins[idx]
                 if (target_bin.capacity >= element.value):
                     target_bin.put(element)
+                    found = True
                     # if the element could be placed into the first bin
                     # we can break out of the loop directly
                     if (idx == 0):
@@ -62,8 +149,12 @@ class Algorithm():
                     bins.insert(j_idx, target_bin)
                     break
 
-            if (Algorithm.DEBUG):
-                print('bin list updated:')
-                print('\n'.join(map(str, bins)))
+            # could not find a bin for this element
+            # add it to the residuals for the next iteration
+            if (not found):
+                residuals.append(element)
 
-        return bins
+        return {
+            'bins': bins,
+            'residuals': residuals
+        }

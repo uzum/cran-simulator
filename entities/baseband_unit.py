@@ -32,3 +32,6 @@ class BasebandUnit(object):
             self.bytes_rec += pkt.size
             if self.debug:
                 print('bbu#%d | %s' % (self.id, pkt))
+
+    def __repr__(self):
+        return "BBU#%d" % self.id

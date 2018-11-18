@@ -12,9 +12,21 @@ class Simulation(object):
             setattr(SimulationParams, key, configuration['simulation'][key])
 
         self.topology = Topology(self.env, configuration['topology'])
-        self.algorithm = Algorithm(self.topology, self.configuration)
 
     def run(self):
+        assignment = Algorithm.get_assignment(self.topology)
+        for bin in assignment['bins']:
+            print('hypervisor %d [%d/%d]:' % (bin.hypervisor.id, bin.capacity, bin.total_capacity))
+            for element in bin.elements:
+                for bbu in element.cluster.baseband_units:
+                    print(bbu)
+            print('\n\n')
+        print('unable to assign following bbus:')
+        for residual in assignment['residuals']:
+            for bbu in residual.cluster.baseband_units:
+                print(bbu)
+
+        exit()
         if (SimulationParams.STEP_TIME == 0):
             self.env.run(until=SimulationParams.SIMULATION_TIME)
         else:

@@ -36,6 +36,26 @@ class Topology(object):
                 hypervisor.remove_baseband_unit(subject_bbu)
                 target_hypervisor.add_baseband_unit(subject_bbu)
 
+    def get_cluster_load(self, cluster):
+        load = 0
+        for rrh in self.rrhs:
+            mapping = self.forwarding.get_mapping(rrh.id)
+            for bbu in cluster.baseband_units:
+                if (bbu.id in mapping):
+                    load += (rrh.arrival_rate * rrh.packet_mean)
+                    # break the loop once we found a single transmission
+                    break
+        return load
+
+    def get_common_load(self, bbu_x, bbu_y):
+        if (bbu_x.id == bbu_y.id): return 0
+        load = 0
+        for rrh in self.rrhs:
+            mapping = self.forwarding.get_mapping(rrh.id)
+            if (bbu_x.id in mapping and bbu_y.id in mapping):
+                load += (rrh.arrival_rate * rrh.packet_mean)
+        return load
+
     def get_transmission_cost(self):
         cost = self.forwarding.get_transmission_cost()
         self.forwarding.reset_transmission_cost()
