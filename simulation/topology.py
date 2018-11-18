@@ -28,11 +28,11 @@ class Topology(object):
     def migrate(self, bbu_id, target_hypervisor_id):
         target_hypervisor = [hv for hv in self.hypervisors if hv.id == target_hypervisor_id][0]
         if (target_hypervisor is None):
-            raise "Target hypervisor not found with the given id"
+            raise Exception("Target hypervisor not found with the given id")
 
         for hypervisor in self.hypervisors:
             subject_bbu = hypervisor.find_baseband_unit(bbu_id)
-            if (subject_bbu is not None):
+            if (subject_bbu is not None and hypervisor.id != target_hypervisor.id):
                 hypervisor.remove_baseband_unit(subject_bbu)
                 target_hypervisor.add_baseband_unit(subject_bbu)
 

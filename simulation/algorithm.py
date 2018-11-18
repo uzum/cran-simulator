@@ -44,7 +44,7 @@ class Cluster():
 
     def split(self):
         if (len(self.baseband_units) == 1):
-            raise "Cannot split a cluster with length 1"
+            raise Exception("Cannot split a cluster with length 1")
         half = math.floor(len(self.baseband_units) / 2)
         return [
             Cluster(self.baseband_units[0:half]),

@@ -32,17 +32,13 @@ class Simulation(object):
 
     def process_algorithm(self):
         assignment = Algorithm.get_assignment(self.topology)
+        if (len(assignment['residuals']) != 0):
+            raise Exception("Failed to allocate all the baseband units into hypervisors")
+
         for bin in assignment['bins']:
-            print('hypervisor %d [%d/%d]:' % (bin.hypervisor.id, bin.capacity, bin.total_capacity))
             for element in bin.elements:
-                for bbu in element.cluster.baseband_units:
-                    print(bbu)
-        print('-------------------------------\n\n')
-        print('unable to assign following bbus:')
-        for residual in assignment['residuals']:
-            for bbu in residual.cluster.baseband_units:
-                print(bbu)
-        print('-------------------------------\n\n')
+                for baseband_unit in element.cluster.baseband_units:
+                    self.topology.migrate(baseband_unit.id, bin.hypervisor.id)
 
     def process_updates(self):
         for key in self.configuration['updates']:
