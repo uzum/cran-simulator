@@ -14,19 +14,6 @@ class Simulation(object):
         self.topology = Topology(self.env, configuration['topology'])
 
     def run(self):
-        assignment = Algorithm.get_assignment(self.topology)
-        for bin in assignment['bins']:
-            print('hypervisor %d [%d/%d]:' % (bin.hypervisor.id, bin.capacity, bin.total_capacity))
-            for element in bin.elements:
-                for bbu in element.cluster.baseband_units:
-                    print(bbu)
-            print('\n\n')
-        print('unable to assign following bbus:')
-        for residual in assignment['residuals']:
-            for bbu in residual.cluster.baseband_units:
-                print(bbu)
-
-        exit()
         if (SimulationParams.STEP_TIME == 0):
             self.env.run(until=SimulationParams.SIMULATION_TIME)
         else:
@@ -38,10 +25,24 @@ class Simulation(object):
                 if ('updates' in self.configuration):
                     self.process_updates()
                 if ('use_algorithm' in self.configuration):
-                    self.algorithm.reassign()
+                    self.process_algorithm()
 
                 self.env.run(until = current)
                 self.step_report()
+
+    def process_algorithm(self):
+        assignment = Algorithm.get_assignment(self.topology)
+        for bin in assignment['bins']:
+            print('hypervisor %d [%d/%d]:' % (bin.hypervisor.id, bin.capacity, bin.total_capacity))
+            for element in bin.elements:
+                for bbu in element.cluster.baseband_units:
+                    print(bbu)
+        print('-------------------------------\n\n')
+        print('unable to assign following bbus:')
+        for residual in assignment['residuals']:
+            for bbu in residual.cluster.baseband_units:
+                print(bbu)
+        print('-------------------------------\n\n')
 
     def process_updates(self):
         for key in self.configuration['updates']:
