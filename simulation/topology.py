@@ -101,6 +101,7 @@ class Topology(object):
 
     def get_drop_rate(self, switch):
         total = switch.packets_drop + switch.packets_rec
+        if (total == 0): return 0.0
         return switch.packets_drop / total
 
     def get_overall_drop_rate(self):

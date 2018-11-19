@@ -63,8 +63,9 @@ class Algorithm():
         elements = list(map(lambda cluster: Element(cluster, topology.get_cluster_load(cluster)), clusters))
         residuals = []
 
+        target_utilization = 0.75
         while(len(elements) > 0):
-            result = Algorithm.best_fit_decreasing(bins, elements)
+            result = Algorithm.best_fit_decreasing(bins, elements, target_utilization)
             bins = result['bins']
             residuals = result['residuals']
 
@@ -74,6 +75,7 @@ class Algorithm():
                     children = element.cluster.split()
                     elements.append(Element(children[0], topology.get_cluster_load(children[0])))
                     elements.append(Element(children[1], topology.get_cluster_load(children[1])))
+            target_utilization += 0.1
 
         return {
             'bins': bins,
@@ -123,7 +125,7 @@ class Algorithm():
 
         return clusters
 
-    def best_fit_decreasing(bins, elements):
+    def best_fit_decreasing(bins, elements, target_utilization):
         bins.sort()
         elements.sort(reverse=True)
         residuals = []
@@ -133,7 +135,7 @@ class Algorithm():
 
             for idx in range(len(bins)):
                 target_bin = bins[idx]
-                if (target_bin.capacity >= element.value):
+                if (target_bin.capacity * target_utilization >= element.value):
                     target_bin.put(element)
                     found = True
                     # if the element could be placed into the first bin
