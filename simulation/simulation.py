@@ -24,14 +24,14 @@ class Simulation(object):
                 current += SimulationParams.STEP_TIME
                 if ('updates' in self.configuration):
                     self.process_updates()
-                if ('use_algorithm' in self.configuration):
-                    self.process_algorithm()
+                if ('algorithm' in self.configuration):
+                    self.process_algorithm(self.configuration['algorithm'])
 
                 self.env.run(until = current)
                 self.step_report()
 
-    def process_algorithm(self):
-        assignment = Algorithm.get_assignment(self.topology)
+    def process_algorithm(self, algorithm):
+        assignment = Algorithm.get_assignment(self.topology, algorithm)
         if (len(assignment['residuals']) != 0):
             raise Exception("Failed to allocate all the baseband units into hypervisors")
 
@@ -52,11 +52,12 @@ class Simulation(object):
                         self.topology.migrate(entry['id'], entry['hypervisor'])
 
     def step_report(self):
-        self.output.write('%s\t%d\t%d\t%f\t%f\t%f\t%f\t%f\n' % (
+        self.output.write('%s\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\n' % (
             SimulationParams.KEYWORD,
             self.env.now,
             self.topology.get_current_load(),
             self.topology.get_replication_factor(),
+            self.topology.get_current_replication_factor(),
             self.topology.get_transmission_cost(),
             self.topology.get_overall_wait(),
             self.topology.get_overall_delay(),

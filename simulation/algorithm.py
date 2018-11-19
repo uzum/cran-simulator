@@ -57,7 +57,37 @@ class Cluster():
 class Algorithm():
     DEBUG = True
 
-    def get_assignment(topology):
+    def get_assignment(topology, algorithm):
+        if algorithm == 'heuristic':
+            return Algorithm.get_heuristic_assignment(topology)
+        elif algorithm == 'normal':
+            return Algorithm.get_normal_assignment(topology)
+        else:
+            raise Exception('Undefined algorithm')
+
+    def get_normal_assignment(topology):
+        bins = list(map(lambda hypervisor: Bin(hypervisor, hypervisor.switch.rate), topology.hypervisors))
+        elements = []
+        residuals = []
+        for hypervisor in topology.hypervisors:
+            for bbu in hypervisor.bbus:
+                cluster = Cluster([bbu])
+                elements.append(Element(cluster, topology.get_cluster_load(cluster)))
+        target_utilization = 0.50
+
+        while(len(elements) > 0 and target_utilization < 2):
+            result = Algorithm.best_fit_decreasing(bins, elements, target_utilization)
+            bins = result['bins']
+            elements = result['residuals']
+            target_utilization += 0.25
+
+        return {
+            'bins': bins,
+            'residuals': residuals
+        }
+
+
+    def get_heuristic_assignment(topology):
         bins = list(map(lambda hypervisor: Bin(hypervisor, hypervisor.switch.rate), topology.hypervisors))
         clusters = Algorithm.get_bbu_clusters(topology)
         elements = list(map(lambda cluster: Element(cluster, topology.get_cluster_load(cluster)), clusters))

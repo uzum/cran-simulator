@@ -4,6 +4,17 @@ from entities.baseband_unit import BasebandUnit
 from entities.switch import Switch
 from forwarding.forwarding import Forwarding
 
+class StatHistory(object):
+    history = {}
+
+    def get(key, current):
+        if (key in StatHistory.history):
+            value = current - StatHistory.history[key]
+            StatHistory.history[key] = current
+            return value
+        StatHistory.history[key] = current
+        return current
+
 class Topology(object):
     def __init__(self, env, configuration):
         self.env = env
@@ -12,6 +23,8 @@ class Topology(object):
         self.rrhs = []
         self.hypervisors = []
         self.external_switch = None
+
+        self.stat_history = {}
 
         self.setup(configuration)
 
@@ -72,6 +85,12 @@ class Topology(object):
         for hypervisor in self.hypervisors:
             total_received += hypervisor.switch.packets_rec
         return total_received / self.external_switch.packets_rec
+
+    def get_current_replication_factor(self):
+        total_received = 0
+        for hypervisor in self.hypervisors:
+            total_received += StatHistory.get('hypervisor.%d.switch.packets_rec' % hypervisor.id, hypervisor.switch.packets_rec)
+        return total_received / StatHistory.get('extswitch.packets_rec', self.external_switch.packets_rec)
 
     def get_average_delay(self, baseband_unit):
         if (len(baseband_unit.arrivals) == 0): return 0.0

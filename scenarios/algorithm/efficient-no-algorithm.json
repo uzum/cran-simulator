@@ -1,6 +1,6 @@
 {
   "simulation": {
-    "VIRTUAL_SWITCH_RATE": 18000,
+    "VIRTUAL_SWITCH_RATE": 20000,
     "STEP_TIME": 10,
     "KEYWORD": "efficient"
   },
