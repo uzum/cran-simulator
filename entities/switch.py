@@ -20,6 +20,8 @@ class Switch(object):
         self.busy = 0  # Used to track if a packet is currently being sent
         self.action = env.process(self.run())  # starts the run() method as a SimPy process
         self.forwarding_function = None
+        self.last_peek_packets_rec = 0
+        self.last_peek_packets_drop = 0
 
     def set_forwarding_function(self, function):
         self.forwarding_function = function
@@ -32,6 +34,25 @@ class Switch(object):
 
     def remove_port(self, out):
         self.outs.remove(out)
+
+    def get_current_stats(self):
+        interval_rec = self.packets_rec - self.last_peek_packets_rec
+        interval_drop = self.packets_drop - self.last_peek_packets_drop
+        self.last_peek_packets_rec = self.packets_rec
+        self.last_peek_packets_drop = self.packets_drop
+        return { 'rec': interval_rec, 'drop': interval_drop }
+
+    def get_lifetime_stats(self):
+        return { 'rec': self.packets_rec, 'drop': self.packets_drop }
+
+    def get_current_drop_rate(self):
+        stats = self.get_current_stats()
+        if (stats['rec'] + stats['drop'] == 0): return 0.0
+        return stats['drop'] / (stats['drop'] + stats['rec'])
+
+    def get_lifetime_drop_rate(self):
+        if (self.packets_rec + self.packets_drop == 0): return 0.0
+        return self.packets_drop / (self.packets_rec + self.packets_drop)
 
     def run(self):
         while True:

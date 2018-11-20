@@ -15,7 +15,6 @@ if (args.config):
         with open(args.config + '.out', 'w+') as fout:
             sim = Simulation(configuration, fout)
             sim.run()
-            sim.report()
 
 elif (args.folder):
     for conf_file in listdir(args.folder):
@@ -26,5 +25,4 @@ elif (args.folder):
                 with open(args.folder + '/' + conf_file + '.out', 'w+') as fout:
                     sim = Simulation(configuration, fout)
                     sim.run()
-                    sim.report()
                     print('completed %s' % conf_file)

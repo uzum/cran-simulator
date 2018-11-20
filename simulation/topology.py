@@ -70,9 +70,7 @@ class Topology(object):
         return load
 
     def get_transmission_cost(self):
-        cost = self.forwarding.get_transmission_cost()
-        self.forwarding.reset_transmission_cost()
-        return cost
+        return StatHistory.get('transmission_cost', self.forwarding.get_transmission_cost())
 
     def get_current_load(self):
         total = 0
@@ -80,7 +78,7 @@ class Topology(object):
             total += (rrh.arrival_rate * rrh.packet_mean * len(self.forwarding.get_mapping(rrh.id)))
         return total
 
-    def get_replication_factor(self):
+    def get_lifetime_replication_factor(self):
         total_received = 0
         for hypervisor in self.hypervisors:
             total_received += hypervisor.switch.packets_rec
@@ -90,46 +88,77 @@ class Topology(object):
         total_received = 0
         for hypervisor in self.hypervisors:
             total_received += StatHistory.get('hypervisor.%d.switch.packets_rec' % hypervisor.id, hypervisor.switch.packets_rec)
+        if (total_received == 0): return 0.0
         return total_received / StatHistory.get('extswitch.packets_rec', self.external_switch.packets_rec)
 
-    def get_average_delay(self, baseband_unit):
-        if (len(baseband_unit.arrivals) == 0): return 0.0
-        return sum(baseband_unit.arrivals) / len(baseband_unit.arrivals)
-
-    def get_average_wait(self, baseband_unit):
-        if (len(baseband_unit.waits) == 0): return 0.0
-        return sum(baseband_unit.waits) / len(baseband_unit.waits)
-
-    def get_overall_delay(self):
+    def get_current_wait(self):
         total = 0
         bbu_count = 0
         for hypervisor in self.hypervisors:
             for bbu in hypervisor.bbus:
-                total += self.get_average_delay(bbu)
+                total += bbu.get_current_wait()
                 bbu_count += 1
         return total / bbu_count
 
-    def get_overall_wait(self):
+    def get_lifetime_wait(self):
         total = 0
         bbu_count = 0
         for hypervisor in self.hypervisors:
             for bbu in hypervisor.bbus:
-                total += self.get_average_wait(bbu)
+                total += bbu.get_lifetime_wait()
                 bbu_count += 1
         return total / bbu_count
 
-    def get_drop_rate(self, switch):
-        total = switch.packets_drop + switch.packets_rec
-        if (total == 0): return 0.0
-        return switch.packets_drop / total
+    def get_current_delay(self):
+        total = 0
+        bbu_count = 0
+        for hypervisor in self.hypervisors:
+            for bbu in hypervisor.bbus:
+                total += bbu.get_current_delay()
+                bbu_count += 1
+        return total / bbu_count
 
-    def get_overall_drop_rate(self):
+    def get_lifetime_delay(self):
+        total = 0
+        bbu_count = 0
+        for hypervisor in self.hypervisors:
+            for bbu in hypervisor.bbus:
+                total += bbu.get_lifetime_delay()
+                bbu_count += 1
+        return total / bbu_count
+
+    def get_lifetime_drop_rate(self):
         total = 0
         total_drop = 0
         for hypervisor in self.hypervisors:
-            total += (hypervisor.switch.packets_rec + hypervisor.switch.packets_drop)
-            total_drop += hypervisor.switch.packets_drop
+            stats = hypervisor.switch.get_lifetime_stats()
+            total += (stats['rec'] + stats['drop'])
+            total_drop += stats['drop']
+
+        if (total == 0): return 0.0
         return total_drop / total
+
+    def get_current_drop_rate(self):
+        total = 0
+        total_drop = 0
+        for hypervisor in self.hypervisors:
+            stats = hypervisor.switch.get_current_stats()
+            total += (stats['rec'] + stats['drop'])
+            total_drop += stats['drop']
+
+        if (total == 0): return 0.0
+        return total_drop / total
+
+    def get_current_utilization(self, hypervisor):
+        load = 0
+        for rrh in self.rrhs:
+            mapping = self.forwarding.get_mapping(rrh.id)
+            for bbu in hypervisor.bbus:
+                if (bbu.id in mapping):
+                    load += (rrh.arrival_rate * rrh.packet_mean)
+                    # break the loop once we found a single transmission
+                    break
+        return load / hypervisor.switch.rate
 
     def setup(self, configuration):
         self.external_switch = Switch(self.env, 'physical', 'external')
