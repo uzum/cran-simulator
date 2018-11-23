@@ -1,4 +1,6 @@
 *.json.out
+*.json.pdf
+*.json.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
