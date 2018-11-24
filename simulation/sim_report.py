@@ -12,7 +12,7 @@ class Report(object):
             switch_headers += 'OVS#%dUtil.\t' % hypervisor.id
 
         self.output.write('---- STEP STATS ----\n')
-        self.output.write('Keyword\tTime\tLoad\tReplication\tCost\tWait\tDelay\tDrop\t%s\n' % switch_headers)
+        self.output.write('Keyword\tTime\tLoad\tReplication\tCost\tWait\tDelay\tDrop\tGain\t%s\n' % switch_headers)
 
     def print_step_report(self):
         switch_stats = ''
@@ -20,7 +20,7 @@ class Report(object):
             switch_stats += '%f\t' % hypervisor.switch.get_current_drop_rate()
             switch_stats += '%f\t' % self.simulation.topology.get_current_utilization(hypervisor)
 
-        self.output.write('%s\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%s\n' % (
+        self.output.write('%s\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%s\n' % (
             SimulationParams.KEYWORD,
             self.simulation.env.now,
             self.simulation.topology.get_current_load(),
@@ -29,8 +29,10 @@ class Report(object):
             self.simulation.topology.get_current_wait(),
             self.simulation.topology.get_current_delay(),
             self.simulation.topology.get_current_drop_rate(),
+            self.simulation.topology.get_utilization_gain(),
             switch_stats
         ))
+        self.output.flush()
 
     def print_overall_report(self):
         self.output.write('-------RRH STATS--------' + '\n')

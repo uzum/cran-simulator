@@ -160,6 +160,13 @@ class Topology(object):
                     break
         return load / hypervisor.switch.rate
 
+    def get_utilization_gain(self):
+        stopped_hypervisors = 0
+        for hypervisor in self.hypervisors:
+            if (len(hypervisor.bbus) == 0):
+                stopped_hypervisors += 1
+        return stopped_hypervisors / len(self.hypervisors)
+
     def setup(self, configuration):
         self.external_switch = Switch(self.env, 'physical', 'external')
         self.external_switch.set_forwarding_function(self.forwarding.forwarding_function)

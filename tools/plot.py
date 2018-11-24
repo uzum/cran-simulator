@@ -1,9 +1,5 @@
 from graphviz import Graph
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--config')
-args = parser.parse_args()
-
 def plot(topology, file):
     dot = Graph('rrh topology', format="png")
 
@@ -17,4 +13,5 @@ def plot(topology, file):
                 dot.edge(str(rrh['id']), str(bbu))
                 edges.add((rrh['id'], bbu))
 
-    dot.render('%s.png' % file, view=True)
+    print(dot.source)
+    # dot.render('%s.png' % file, view=True)

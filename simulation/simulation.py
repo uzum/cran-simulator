@@ -24,7 +24,7 @@ class Simulation(object):
                 current += SimulationParams.STEP_TIME
                 if ('updates' in self.configuration):
                     self.process_updates()
-                if ('algorithm' in self.configuration):
+                if ('algorithm' in self.configuration and self.configuration['algorithm'] != 'no-algorithm'):
                     self.process_algorithm(self.configuration['algorithm'])
 
                 self.env.run(until = current)

@@ -35,18 +35,22 @@ class Switch(object):
     def remove_port(self, out):
         self.outs.remove(out)
 
-    def get_current_stats(self):
+    def peek_current_stats(self):
         interval_rec = self.packets_rec - self.last_peek_packets_rec
         interval_drop = self.packets_drop - self.last_peek_packets_drop
+        return { 'rec': interval_rec, 'drop': interval_drop }
+
+    def get_current_stats(self):
+        stats = self.peek_current_stats()
         self.last_peek_packets_rec = self.packets_rec
         self.last_peek_packets_drop = self.packets_drop
-        return { 'rec': interval_rec, 'drop': interval_drop }
+        return stats
 
     def get_lifetime_stats(self):
         return { 'rec': self.packets_rec, 'drop': self.packets_drop }
 
     def get_current_drop_rate(self):
-        stats = self.get_current_stats()
+        stats = self.peek_current_stats()
         if (stats['rec'] + stats['drop'] == 0): return 0.0
         return stats['drop'] / (stats['drop'] + stats['rec'])
 
