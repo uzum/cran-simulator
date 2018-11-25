@@ -9,18 +9,18 @@ parser.add_argument('--output')
 args = parser.parse_args()
 
 # topology parameters
-TARGET_CLUSTERS = 8
-TARGET_CLUSTER_SIZE = 6
+TARGET_CLUSTERS = 5
+TARGET_CLUSTER_SIZE = 3
 TARGET_NEIGHBOR_SIZE = 2
-TARGET_ARRIVAL_RATE = 20.0
+TARGET_ARRIVAL_RATE = 25.0
 TARGET_PACKET_MEAN = 125
 TARGET_PACKET_DEV = 20
-HYPERVISORS = 5
+HYPERVISORS = 3
 
 # simulation parameters
 SIMULATION_TIME = 500
 STEP_TIME = 5
-VIRTUAL_SWITCH_RATE = 50000
+VIRTUAL_SWITCH_RATE = 20000
 VIRTUAL_SWITCH_QLIMIT = 1000
 EXTERNAL_TRANSMISSION_COST = 5
 INTERNAL_TRANSMISSION_COST = 1
@@ -44,6 +44,8 @@ scenario = {
 def get_random(mean, min_value=0, max_value=float('inf')):
     min_value = max(min_value, math.floor(mean * 0.5))
     max_value = min(max_value, math.floor(mean * 1.5))
+
+    if (min_value >= max_value): return round(min_value)
     return random.randint(min_value, max_value)
 
 def generate_parameters():
@@ -71,7 +73,12 @@ def generate_topology():
                 'baseband_units': []
             })
             rrh_id += 1
-        if (rrh_size <= 1): continue
+        clusters.append(cluster)
+
+        if (rrh_size <= 1):
+            cluster[0]['baseband_units'].append(cluster[0]['id'])
+            continue
+
         indexes = list(map(lambda rrh: rrh['id'], cluster))
         for rrh in cluster:
             neighbor_size = get_random(TARGET_NEIGHBOR_SIZE, max_value = len(cluster) - 2)
@@ -82,7 +89,6 @@ def generate_topology():
                 random.shuffle(indexes)
             # append its serving station with the same id
             rrh['baseband_units'].append(rrh['id'])
-        clusters.append(cluster)
 
     bbu_per_hypervisor = math.ceil(rrh_id / HYPERVISORS)
     current_hypervisor = scenario['topology']['hypervisors'][0]
@@ -114,7 +120,7 @@ if __name__ == "__main__":
     generate_topology()
     generate_load()
 
-    for algorithm in ['normal', 'heuristic']:
+    for algorithm in ['normal', 'heuristic', 'optimal']:
         scenario['algorithm'] = algorithm
         scenario['simulation']['KEYWORD'] = algorithm
         with open('%s/%s.json' % (args.output, algorithm), 'w+') as fout:
