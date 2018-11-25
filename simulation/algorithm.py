@@ -1,5 +1,9 @@
 import numpy
 import math
+from collections import namedtuple
+
+BBU_serialized = namedtuple('BBU_serialized', ['id'])
+Hypervisor_serialized = namedtuple('Hypervisor_serialized', ['id'])
 
 class Bin():
     def __init__(self, hypervisor, capacity):
@@ -11,6 +15,22 @@ class Bin():
     def put(self, element):
         self.elements.append(element)
         self.capacity -= element.value
+
+    def remove(self, element):
+        self.elements.remove(element)
+        self.capacity += element.value
+
+    def serialize(self):
+        return {
+            'elements': [el.serialize() for el in self.elements],
+            'hypervisor': self.hypervisor.id
+        }
+
+    def deserialize(state):
+        obj = Bin(None, None)
+        obj.elements = [Element.deserialize(el_state) for el_state in state['elements']]
+        obj.hypervisor = Hypervisor_serialized(state['hypervisor'])
+        return obj
 
     def __lt__(self, other):
         return self.capacity < other.capacity
@@ -32,6 +52,14 @@ class Element():
     def __str__(self):
         return "Element %d" % (self.value)
 
+    def serialize(self):
+        return {
+            'cluster': self.cluster.serialize()
+        }
+
+    def deserialize(state):
+        return Element(Cluster.deserialize(state['cluster']), None)
+
 class Cluster():
     def __init__(self, baseband_units = []):
         self.baseband_units = baseband_units
@@ -51,17 +79,39 @@ class Cluster():
             Cluster(self.baseband_units[half:])
         ]
 
+    def serialize(self):
+        return {
+            'baseband_units': [bbu.id for bbu in self.baseband_units]
+        }
+
+    def deserialize(state):
+        return Cluster([BBU_serialized(bbu) for bbu in state['baseband_units']])
+
+    def merge(clusters):
+        merged = Cluster([])
+        for cluster in clusters:
+            merged.baseband_units.extend(cluster.baseband_units)
+        return merged
+
     def __repr__(self):
         return "[%s]" % ', '.join(map(str, self.baseband_units))
 
 class Algorithm():
     DEBUG = True
 
+    def get_assignment_cost(topology, bins):
+        total_received = 0
+        for hypervisor in self.hypervisors:
+            total_received += hypervisor.switch.packets_rec
+        return total_received / self.external_switch.packets_rec
+
     def get_assignment(topology, algorithm):
         if algorithm == 'heuristic':
             return Algorithm.get_heuristic_assignment(topology)
         elif algorithm == 'normal':
             return Algorithm.get_normal_assignment(topology)
+        elif algorithm == 'optimal':
+            return Algorithm.get_optimal_assignment(topology)
         else:
             raise Exception('Undefined algorithm')
 
@@ -86,6 +136,42 @@ class Algorithm():
             'residuals': residuals
         }
 
+    def get_optimal_assignment(topology):
+        bins = list(map(lambda hypervisor: Bin(hypervisor, hypervisor.switch.rate), topology.hypervisors))
+        elements = []
+        best_assignment = None
+        best_assignment_load = float('inf')
+
+        for hypervisor in topology.hypervisors:
+            for bbu in hypervisor.bbus:
+                cluster = Cluster([bbu])
+                elements.append(Element(cluster, topology.get_cluster_load(cluster)))
+
+        def recurse(bins, element_idx, solution, placed_elements):
+            nonlocal best_assignment
+            nonlocal best_assignment_load
+
+            if placed_elements == len(elements):
+                load = 0
+                for bin in bins:
+                    joint_cluster = Cluster.merge([element.cluster for element in bin.elements])
+                    load += topology.get_cluster_load(joint_cluster)
+                if (load < best_assignment_load):
+                    best_assignment = [bin.serialize() for bin in bins]
+                    best_assignment_load = load
+
+            for i in range(len(bins)):
+                for j in range(element_idx, len(elements)):
+                    if bins[i].capacity - elements[j].value >= 0:
+                        bins[i].put(elements[j])
+                        recurse(bins, j + 1, solution, placed_elements + 1)
+                        bins[i].remove(elements[j])
+
+        recurse(bins, 0, [[] for i in range(len(bins))], 0)
+        return {
+            'bins': [Bin.deserialize(bin) for bin in best_assignment],
+            'residuals': []
+        }
 
     def get_heuristic_assignment(topology):
         bins = list(map(lambda hypervisor: Bin(hypervisor, hypervisor.switch.rate), topology.hypervisors))
