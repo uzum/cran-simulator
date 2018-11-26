@@ -125,7 +125,7 @@ class Algorithm():
                 elements.append(Element(cluster, topology.get_cluster_load(cluster)))
         target_utilization = 0.50
 
-        while(len(elements) > 0 and target_utilization < 2):
+        while(len(elements) > 0):
             result = Algorithm.best_fit_decreasing(bins, elements, target_utilization)
             bins = result['bins']
             elements = result['residuals']
@@ -133,21 +133,19 @@ class Algorithm():
 
         return {
             'bins': bins,
-            'residuals': residuals
+            'residuals': elements
         }
 
     def get_optimal_assignment(topology):
         bins = list(map(lambda hypervisor: Bin(hypervisor, hypervisor.switch.rate), topology.hypervisors))
-        elements = []
+        clusters = Algorithm.get_bbu_clusters(topology)
+        elements = list(map(lambda cluster: Element(cluster, topology.get_cluster_load(cluster)), clusters))
+
         best_assignment = None
         best_assignment_load = float('inf')
+        target_utilization = 0.75
 
-        for hypervisor in topology.hypervisors:
-            for bbu in hypervisor.bbus:
-                cluster = Cluster([bbu])
-                elements.append(Element(cluster, topology.get_cluster_load(cluster)))
-
-        def recurse(bins, element_idx, solution, placed_elements):
+        def recurse(bins, element_idx, placed_elements):
             nonlocal best_assignment
             nonlocal best_assignment_load
 
@@ -156,18 +154,22 @@ class Algorithm():
                 for bin in bins:
                     joint_cluster = Cluster.merge([element.cluster for element in bin.elements])
                     load += topology.get_cluster_load(joint_cluster)
+
                 if (load < best_assignment_load):
                     best_assignment = [bin.serialize() for bin in bins]
                     best_assignment_load = load
 
             for i in range(len(bins)):
                 for j in range(element_idx, len(elements)):
-                    if bins[i].capacity - elements[j].value >= 0:
+                    if ((bins[i].total_capacity * (target_utilization - 1)) + bins[i].capacity >= elements[j].value):
                         bins[i].put(elements[j])
-                        recurse(bins, j + 1, solution, placed_elements + 1)
+                        recurse(bins, j + 1, placed_elements + 1)
                         bins[i].remove(elements[j])
 
-        recurse(bins, 0, [[] for i in range(len(bins))], 0)
+        while (best_assignment is None):
+            recurse(bins, 0, 0)
+            target_utilization += 0.25
+
         return {
             'bins': [Bin.deserialize(bin) for bin in best_assignment],
             'residuals': []
@@ -195,7 +197,7 @@ class Algorithm():
 
         return {
             'bins': bins,
-            'residuals': residuals
+            'residuals': elements
         }
 
     def get_bbu_clusters(topology):
@@ -251,7 +253,7 @@ class Algorithm():
 
             for idx in range(len(bins)):
                 target_bin = bins[idx]
-                if (target_bin.capacity * target_utilization >= element.value):
+                if ((target_bin.total_capacity * (target_utilization - 1)) + target_bin.capacity >= element.value):
                     target_bin.put(element)
                     found = True
                     # if the element could be placed into the first bin
