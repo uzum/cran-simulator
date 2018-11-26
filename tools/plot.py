@@ -13,5 +13,4 @@ def plot(topology, file):
                 dot.edge(str(rrh['id']), str(bbu))
                 edges.add((rrh['id'], bbu))
 
-    print(dot.source)
-    # dot.render('%s.png' % file, view=True)
+    dot.render(file, view=True)

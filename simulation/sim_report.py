@@ -1,9 +1,11 @@
 from .sim_parameters import SimulationParams
+import time
 
 class Report(object):
     def __init__(self, simulation, output):
         self.output = output
         self.simulation = simulation
+        self.start = time.time()
 
     def print_header(self):
         switch_headers = ''
@@ -62,3 +64,5 @@ class Report(object):
             self.output.write('%d\t%d\t%d\t%f\n' % (hypervisor.id, hypervisor.switch.packets_rec, hypervisor.switch.packets_drop, hypervisor.switch.get_lifetime_drop_rate()))
         self.output.write('\noverall drop rate: %f\n' % self.simulation.topology.get_lifetime_drop_rate())
         self.output.write('-------------------------\n\n')
+
+        self.output.write('Simulation time: %.2f ms' % (time.time() - self.start))
