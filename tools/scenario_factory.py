@@ -9,18 +9,18 @@ parser.add_argument('--output')
 args = parser.parse_args()
 
 # topology parameters
-TARGET_CLUSTERS = 5
-TARGET_CLUSTER_SIZE = 3
+TARGET_CLUSTERS = 7
+TARGET_CLUSTER_SIZE = 4
 TARGET_NEIGHBOR_SIZE = 2
 TARGET_ARRIVAL_RATE = 25.0
 TARGET_PACKET_MEAN = 125
 TARGET_PACKET_DEV = 20
-HYPERVISORS = 3
+HYPERVISORS = 5
 
 # simulation parameters
 SIMULATION_TIME = 500
 STEP_TIME = 5
-VIRTUAL_SWITCH_RATE = 20000
+VIRTUAL_SWITCH_RATE = 50000
 VIRTUAL_SWITCH_QLIMIT = 1000
 EXTERNAL_TRANSMISSION_COST = 5
 INTERNAL_TRANSMISSION_COST = 1
@@ -100,7 +100,7 @@ def generate_topology():
                 current_hypervisor = { 'id': current_hypervisor['id'] + 1, 'baseband_units': [] }
                 scenario['topology']['hypervisors'].append(current_hypervisor)
 
-    # plot(topology, 'test.png')
+    plot(scenario['topology'], 'topology')
 
 def generate_load():
     rrh_size = len(scenario['topology']['remote_radio_heads'])
