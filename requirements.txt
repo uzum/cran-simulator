@@ -1,2 +1,4 @@
 numpy
 simpy
+gspread
+oauth2client

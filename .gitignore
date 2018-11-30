@@ -2,6 +2,8 @@
 *.json.pdf
 *.json.png
 
+simulation/credentials.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

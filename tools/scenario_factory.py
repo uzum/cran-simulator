@@ -1,6 +1,7 @@
 import random
 import math
 import json
+import time
 import argparse
 from plot import plot
 
@@ -10,12 +11,12 @@ args = parser.parse_args()
 
 # topology parameters
 TARGET_CLUSTERS = 7
-TARGET_CLUSTER_SIZE = 4
+TARGET_CLUSTER_SIZE = 5
 TARGET_NEIGHBOR_SIZE = 2
 TARGET_ARRIVAL_RATE = 25.0
 TARGET_PACKET_MEAN = 125
 TARGET_PACKET_DEV = 20
-HYPERVISORS = 5
+HYPERVISORS = 4
 
 # simulation parameters
 SIMULATION_TIME = 500
@@ -120,8 +121,10 @@ if __name__ == "__main__":
     generate_topology()
     generate_load()
 
+    now = round(time.time())
     for algorithm in ['normal', 'heuristic', 'optimal']:
         scenario['algorithm'] = algorithm
-        scenario['simulation']['KEYWORD'] = algorithm
-        with open('%s/%s.json' % (args.output, algorithm), 'w+') as fout:
+        scenario['simulation']['KEYWORD'] = '%s-%d' % (algorithm, now)
+        scenario['simulation']['CLUSTER_SIZE'] = TARGET_CLUSTERS
+        with open('%s/%s.json' % (args.output, scenario['simulation']['KEYWORD']), 'w+') as fout:
             fout.write(json.dumps(scenario, indent = 2))

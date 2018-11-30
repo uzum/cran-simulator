@@ -1,10 +1,27 @@
-from .sim_parameters import SimulationParams
+import gspread
 import time
+import os
+from oauth2client.service_account import ServiceAccountCredentials
+from .sim_parameters import SimulationParams
+
+class Spreadsheet(object):
+    def __init__(self, sheet):
+        # use creds to create a client to interact with the Google Drive API
+        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(os.path.dirname(__file__), 'credentials.json'), scope)
+        client = gspread.authorize(creds)
+
+        self.sheet = client.open(sheet)
+
+        # Extract and print all of the values
+        # list_of_hashes = sheet.worksheet('runs').get_all_records()
+        # print(list_of_hashes)
 
 class Report(object):
     def __init__(self, simulation, output):
         self.output = output
         self.simulation = simulation
+        self.runs_sheet = Spreadsheet('simulation-times').sheet.worksheet('runs')
         self.start = time.time()
 
     def print_header(self):
@@ -65,4 +82,14 @@ class Report(object):
         self.output.write('\noverall drop rate: %f\n' % self.simulation.topology.get_lifetime_drop_rate())
         self.output.write('-------------------------\n\n')
 
-        self.output.write('Simulation time: %.2f ms' % (time.time() - self.start))
+        simulation_time = time.time() - self.start
+        self.output.write('Simulation time: %.2f ms' % simulation_time)
+
+        self.runs_sheet.append_row([
+            SimulationParams.KEYWORD,
+            self.simulation.configuration['algorithm'],
+            len(self.simulation.topology.hypervisors),
+            len(self.simulation.topology.rrhs),
+            SimulationParams.CLUSTER_SIZE,
+            '%.3f' % simulation_time
+        ])
