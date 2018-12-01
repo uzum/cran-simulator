@@ -4,34 +4,43 @@ import os
 from oauth2client.service_account import ServiceAccountCredentials
 from .sim_parameters import SimulationParams
 
+DRIVE_OWNER = 'a.uzumcuoglu@gmail.com'
+
 class Spreadsheet(object):
-    def __init__(self, sheet):
+    def __init__(self, sheet, create = False):
         # use creds to create a client to interact with the Google Drive API
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
         creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(os.path.dirname(__file__), 'credentials.json'), scope)
         client = gspread.authorize(creds)
+        if (create == False):
+            self.sheet = client.open(sheet)
+        else:
+            self.sheet = client.create(sheet)
 
-        self.sheet = client.open(sheet)
+    def append_row(self, values):
+        self.sheet.sheet1.append_row(values)
 
-        # Extract and print all of the values
-        # list_of_hashes = sheet.worksheet('runs').get_all_records()
-        # print(list_of_hashes)
+    def share(self):
+        self.sheet.share(DRIVE_OWNER, perm_type="user", role="reader", notify=False)
 
 class Report(object):
     def __init__(self, simulation, output):
         self.output = output
         self.simulation = simulation
-        self.runs_sheet = Spreadsheet('simulation-times').sheet.worksheet('runs')
+        self.runs_sheet = Spreadsheet('simulation-times')
+        self.steps_sheet = Spreadsheet(output.name, create=True)
         self.start = time.time()
 
     def print_header(self):
         switch_headers = ''
         for hypervisor in self.simulation.topology.hypervisors:
-            switch_headers += 'OVS#%dDrop\t' % hypervisor.id
-            switch_headers += 'OVS#%dUtil.\t' % hypervisor.id
+            switch_headers += 'OVS%dDrop\t' % hypervisor.id
+            switch_headers += 'OVS%dUtil.\t' % hypervisor.id
 
         self.output.write('---- STEP STATS ----\n')
-        self.output.write('Keyword\tTime\tLoad\tReplication\tCost\tWait\tDelay\tDrop\tGain\t%s\n' % switch_headers)
+        steps_header = 'Keyword\tTime\tLoad\tReplication\tCost\tWait\tDelay\tDrop\tGain\t%s\n' % switch_headers
+        self.output.write(steps_header)
+        self.steps_sheet.append_row(steps_header.split('\t'))
 
     def print_step_report(self):
         switch_stats = ''
@@ -39,7 +48,7 @@ class Report(object):
             switch_stats += '%f\t' % hypervisor.switch.get_current_drop_rate()
             switch_stats += '%f\t' % self.simulation.topology.get_current_utilization(hypervisor)
 
-        self.output.write('%s\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%s\n' % (
+        step_result = '%s\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%s\n' % (
             SimulationParams.KEYWORD,
             self.simulation.env.now,
             self.simulation.topology.get_current_load(),
@@ -50,7 +59,9 @@ class Report(object):
             self.simulation.topology.get_current_drop_rate(),
             self.simulation.topology.get_utilization_gain(),
             switch_stats
-        ))
+        )
+        self.output.write(step_result)
+        self.steps_sheet.append_row(step_result.split('\t'))
         self.output.flush()
 
     def print_overall_report(self):
@@ -93,3 +104,4 @@ class Report(object):
             SimulationParams.CLUSTER_SIZE,
             '%.3f' % simulation_time
         ])
+        self.steps_sheet.share()
