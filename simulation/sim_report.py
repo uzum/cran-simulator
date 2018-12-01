@@ -12,13 +12,24 @@ class Spreadsheet(object):
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
         creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(os.path.dirname(__file__), 'credentials.json'), scope)
         client = gspread.authorize(creds)
+        self.batch = []
         if (create == False):
             self.sheet = client.open(sheet)
         else:
             self.sheet = client.create(sheet)
 
-    def append_row(self, values):
-        self.sheet.sheet1.append_row(values)
+    def append_row(self, values, write = True):
+        if (write == True):
+            self.sheet.sheet1.append_row(values)
+        else:
+            self.batch.append(values)
+
+    def append_batch(self):
+        self.sheet.values_append('Sheet1!2:%d' % (2 + len(self.batch)), {
+            'valueInputOption': 'RAW',
+            'includeValuesInResponse': 'false',
+            }, { 'values': self.batch })
+        self.batch = []
 
     def share(self):
         self.sheet.share(DRIVE_OWNER, perm_type="user", role="reader", notify=False)
@@ -61,7 +72,7 @@ class Report(object):
             switch_stats
         )
         self.output.write(step_result)
-        self.steps_sheet.append_row(step_result.split('\t'))
+        self.steps_sheet.append_row(step_result.split('\t'), write=False)
         self.output.flush()
 
     def print_overall_report(self):
@@ -104,4 +115,5 @@ class Report(object):
             SimulationParams.CLUSTER_SIZE,
             '%.3f' % simulation_time
         ])
+        self.steps_sheet.append_batch()
         self.steps_sheet.share()
