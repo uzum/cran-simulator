@@ -10,13 +10,13 @@ parser.add_argument('--output')
 args = parser.parse_args()
 
 # topology parameters
-TARGET_CLUSTERS = 3
-TARGET_CLUSTER_SIZE = 3
-TARGET_NEIGHBOR_SIZE = 2
+TARGET_CLUSTERS = 7
+TARGET_CLUSTER_SIZE = 4
+TARGET_NEIGHBOR_SIZE = 3
 TARGET_ARRIVAL_RATE = 25.0
 TARGET_PACKET_MEAN = 100
 TARGET_PACKET_DEV = 20
-HYPERVISORS = 2
+HYPERVISORS = 5
 
 # simulation parameters
 SIMULATION_TIME = 500
@@ -63,7 +63,7 @@ def generate_topology():
     clusters = []
     rrh_count = 0
     total_rrh_size = round(TARGET_CLUSTERS * TARGET_CLUSTER_SIZE)
-    TARGET_ARRIVAL_RATE = round((VIRTUAL_SWITCH_RATE * HYPERVISORS) / (total_rrh_size * TARGET_PACKET_MEAN))
+    TARGET_ARRIVAL_RATE = round(((VIRTUAL_SWITCH_RATE * HYPERVISORS) * 1.25) / (total_rrh_size * TARGET_PACKET_MEAN))
     for i in range(TARGET_CLUSTERS):
         cluster = []
         if (i == TARGET_CLUSTERS - 1):
