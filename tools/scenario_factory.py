@@ -3,7 +3,11 @@ import math
 import json
 import time
 import argparse
+<<<<<<< HEAD
 from plotters.topology import plot
+=======
+#from plot import plot
+>>>>>>> 39e9b848d4b6cf130510526eafcec29b31147580
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--output')
@@ -11,17 +15,17 @@ args = parser.parse_args()
 
 # topology parameters
 TARGET_CLUSTERS = 7
-TARGET_CLUSTER_SIZE = 5
-TARGET_NEIGHBOR_SIZE = 2
+TARGET_CLUSTER_SIZE = 4
+TARGET_NEIGHBOR_SIZE = 3
 TARGET_ARRIVAL_RATE = 25.0
-TARGET_PACKET_MEAN = 125
+TARGET_PACKET_MEAN = 100
 TARGET_PACKET_DEV = 20
-HYPERVISORS = 4
+HYPERVISORS = 5
 
 # simulation parameters
 SIMULATION_TIME = 500
 STEP_TIME = 5
-VIRTUAL_SWITCH_RATE = 50000
+VIRTUAL_SWITCH_RATE = 40000
 VIRTUAL_SWITCH_QLIMIT = 1000
 EXTERNAL_TRANSMISSION_COST = 5
 INTERNAL_TRANSMISSION_COST = 1
@@ -61,19 +65,25 @@ def generate_parameters():
 
 def generate_topology():
     clusters = []
-    rrh_id = 0
+    rrh_count = 0
+    total_rrh_size = round(TARGET_CLUSTERS * TARGET_CLUSTER_SIZE)
+    TARGET_ARRIVAL_RATE = round(((VIRTUAL_SWITCH_RATE * HYPERVISORS) * 1.25) / (total_rrh_size * TARGET_PACKET_MEAN))
     for i in range(TARGET_CLUSTERS):
         cluster = []
-        rrh_size = get_random(TARGET_CLUSTER_SIZE)
+        if (i == TARGET_CLUSTERS - 1):
+            rrh_size = total_rrh_size - rrh_count
+        else:
+            rrh_size = get_random((total_rrh_size - rrh_count) / (TARGET_CLUSTERS - i))
+        print('%d rrhs in cluster %d' % (rrh_size, i))
         for rrh in range(rrh_size):
             cluster.append({
-                'id': rrh_id,
+                'id': rrh_count,
                 'arrival_rate': get_random(TARGET_ARRIVAL_RATE),
                 'packet_mean': get_random(TARGET_PACKET_MEAN),
                 'packet_dev': get_random(TARGET_PACKET_DEV),
                 'baseband_units': []
             })
-            rrh_id += 1
+            rrh_count += 1
         clusters.append(cluster)
 
         if (rrh_size <= 1):
@@ -91,7 +101,7 @@ def generate_topology():
             # append its serving station with the same id
             rrh['baseband_units'].append(rrh['id'])
 
-    bbu_per_hypervisor = math.ceil(rrh_id / HYPERVISORS)
+    bbu_per_hypervisor = math.ceil(rrh_count / HYPERVISORS)
     current_hypervisor = scenario['topology']['hypervisors'][0]
     for cluster in clusters:
         for rrh in cluster:
@@ -101,7 +111,10 @@ def generate_topology():
                 current_hypervisor = { 'id': current_hypervisor['id'] + 1, 'baseband_units': [] }
                 scenario['topology']['hypervisors'].append(current_hypervisor)
 
-    plot(scenario['topology'], 'topology')
+#    plot(scenario['topology'], 'topology')
+    print('rrh size: %d' % len(scenario['topology']['remote_radio_heads']))
+    print('hypervisor size: %d' % len(scenario['topology']['hypervisors']))
+    print('cluster size: %d' % TARGET_CLUSTERS)
 
 def generate_load():
     rrh_size = len(scenario['topology']['remote_radio_heads'])
