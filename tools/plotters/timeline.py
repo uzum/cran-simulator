@@ -1,29 +1,54 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import csv
 
-def plot_mean_and_CI(mean, lb, ub, color_mean=None, color_shading=None):
-    plt.fill_between(range(mean.shape[0]), ub, lb, color=color_shading, alpha=.5)
-    plt.plot(mean, color_mean)
+markers = {
+    'heuristic': { 'timestamps': [], 'repl': [], 'repl_err': [], 'cost': [], 'cost_err': [], 'drop': [], 'drop_err': [], 'effc': [], 'effc_err': [] },
+    'optimal': { 'timestamps': [], 'repl': [], 'repl_err': [], 'cost': [], 'cost_err': [], 'drop': [], 'drop_err': [], 'effc': [], 'effc_err': [] },
+    'normal': { 'timestamps': [], 'repl': [], 'repl_err': [], 'cost': [], 'cost_err': [], 'drop': [], 'drop_err': [], 'effc': [], 'effc_err': [] }
+}
 
-# generate 3 sets of random means and confidence intervals to plot
-mean0 = np.random.random(50)
-ub0 = mean0 + np.random.random(50) + .5
-lb0 = mean0 - np.random.random(50) - .5
+color_map = {
+    'heuristic': 'r',
+    'normal': 'm',
+    'optimal': 'c'
+}
 
-mean1 = np.random.random(50) + 2
-ub1 = mean1 + np.random.random(50) + .5
-lb1 = mean1 - np.random.random(50) - .5
+for algorithm in ['optimal', 'heuristic', 'normal']:
+    with open('./timeline-%s.csv' % algorithm, 'r') as csvfile:
+        reader = csv.reader(csvfile, delimiter="\t")
+        for row in reader:
+            markers[algorithm]['timestamps'].append(float(row[1].replace(',', '')))
+            markers[algorithm]['repl'].append(float(row[2].replace(',', '')))
+            markers[algorithm]['cost'].append(float(row[3].replace(',', '')))
+            markers[algorithm]['drop'].append(float(row[6].replace(',', '')))
+            markers[algorithm]['effc'].append(float(row[7].replace(',', '')))
+            markers[algorithm]['repl_err'].append(float(row[8].replace(',', '')) - float(row[2].replace(',', '')))
+            markers[algorithm]['cost_err'].append(float(row[10].replace(',', '')) - float(row[3].replace(',', '')))
+            markers[algorithm]['drop_err'].append(float(row[12].replace(',', '')) - float(row[6].replace(',', '')))
+            markers[algorithm]['effc_err'].append(float(row[14].replace(',', '')) - float(row[7].replace(',', '')))
 
-mean2 = np.random.random(50) -1
-ub2 = mean2 + np.random.random(50) + .5
-lb2 = mean2 - np.random.random(50) - .5
+fig, axs = plt.subplots(nrows=4, ncols=1, figsize=(12, 24))
+for algorithm in ['optimal', 'heuristic', 'normal']:
+    axs[0].errorbar(markers[algorithm]['timestamps'], markers[algorithm]['repl'], yerr=markers[algorithm]['repl_err'], fmt='o', capsize=3, color = color_map[algorithm], alpha=0.5, label=algorithm)
+    axs[1].errorbar(markers[algorithm]['timestamps'], markers[algorithm]['cost'], yerr=markers[algorithm]['cost_err'], fmt='o', capsize=3, color = color_map[algorithm], alpha=0.5, label=algorithm)
+    axs[2].errorbar(markers[algorithm]['timestamps'], markers[algorithm]['drop'], yerr=markers[algorithm]['drop_err'], fmt='o', capsize=3, color = color_map[algorithm], alpha=0.5, label=algorithm)
+    axs[3].errorbar(markers[algorithm]['timestamps'], markers[algorithm]['effc'], yerr=markers[algorithm]['effc_err'], fmt='o', capsize=3, color = color_map[algorithm], alpha=0.5, label=algorithm)
 
-# plot the data
-fig = plt.figure(1, figsize=(7, 2.5))
-plot_mean_and_CI(mean0, ub0, lb0, color_mean='k', color_shading='k')
-plot_mean_and_CI(mean1, ub1, lb1, color_mean='b', color_shading='b')
-plot_mean_and_CI(mean2, ub2, lb2, color_mean='g--', color_shading='g')
+axs[0].set_xlabel('Time')
+axs[0].set_ylabel('Replication factor')
+axs[0].legend()
+axs[1].set_xlabel('Time')
+axs[1].set_ylabel('Cost value')
+axs[1].legend()
+axs[2].set_xlabel('Time')
+axs[2].set_ylabel('Drop rate')
+axs[2].legend()
+axs[3].set_xlabel('Time')
+axs[3].set_ylabel('Energy efficiency')
+axs[3].legend()
+
 
 plt.tight_layout()
 plt.grid()
-plt.savefig('demo.png')
+plt.savefig('timeline.png')
