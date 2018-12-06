@@ -2,9 +2,9 @@ import random
 from copy import deepcopy
 
 class Node(object):
-    def __init__(self, id, neighbors = []):
+    def __init__(self, id):
         self.id = id
-        self.neighbors = neighbors
+        self.neighbors = []
         self.cluster = [self]
 
     def __repr__(self):
@@ -31,11 +31,11 @@ class KargersMinCut(object):
         if (run_count == None):
             run_count = len(adjacency_matrix[0])
 
-        nodes = [Node(i) for i in adjacency_matrix[0]]
+        nodes = [Node(i) for i in range(len(adjacency_matrix))]
         for node_i in nodes:
             for node_j in nodes:
-                if (node_i == node_j): continue
-                if (adjacency_matrix[node_i][node_j] > 0):
+                if (node_i.id == node_j.id): continue
+                if (adjacency_matrix[node_i.id][node_j.id] > 0):
                     node_i.neighbors.append(node_j)
 
         graph = Graph(nodes)
@@ -51,9 +51,9 @@ class KargersMinCut(object):
 
     def find_min_cut(graph):
         while graph.size() > 2:
-             v = random.choice(graph.nodes)
-             w = random.choice(v.neighbors)
-             contract(graph, v, w)
+            v = random.choice(graph.nodes)
+            w = random.choice(v.neighbors)
+            KargersMinCut.contract(graph, v, w)
 
         return {
             'cutlength': len(graph.nodes[0].neighbors),

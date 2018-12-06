@@ -71,6 +71,15 @@ class Cluster():
     def has(self, baseband_unit):
         return baseband_unit in self.baseband_units
 
+    def reduce_matrix(self, matrix):
+        reduced = numpy.zeros((len(matrix), len(matrix)))
+        owned_bbu_ids = [bbu.id for bbu in self.baseband_units]
+        for i in reduced:
+            for j in reduced:
+                if (i in owned_bbu_ids and j in owned_bbu_ids):
+                    reduced[i][j] = matrix[i][j]
+        return reduced
+
     def split(self, adjacency_matrix, algorithm = "random"):
         if (len(self.baseband_units) == 1):
             raise Exception("Cannot split a cluster with length 1")
@@ -83,7 +92,7 @@ class Cluster():
             ]
 
         else:
-            clusters = KargersMinCut.solve(adjacency_matrix)
+            clusters = KargersMinCut.solve(self.reduce_matrix(adjacency_matrix))
             return [
                 Cluster([bbu for bbu in self.baseband_units if bbu.id in clusters[0]]),
                 Cluster([bbu for bbu in self.baseband_units if bbu.id in clusters[1]])
