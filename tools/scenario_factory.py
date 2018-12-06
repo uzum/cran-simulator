@@ -3,7 +3,11 @@ import math
 import json
 import time
 import argparse
+<<<<<<< HEAD
+from plotters.topology import plot
+=======
 #from plot import plot
+>>>>>>> 39e9b848d4b6cf130510526eafcec29b31147580
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--output')
