@@ -27,11 +27,11 @@ class Graph(object):
         return string
 
 class KargersMinCut(object):
-    def solve(adjacency_matrix, run_count = None):
+    def solve(cluster_nodes, adjacency_matrix, run_count = None):
         if (run_count == None):
-            run_count = len(adjacency_matrix[0])
+            run_count = len(cluster_nodes) ** 2
 
-        nodes = [Node(i) for i in range(len(adjacency_matrix))]
+        nodes = [Node(node.id) for node in cluster_nodes]
         for node_i in nodes:
             for node_j in nodes:
                 if (node_i.id == node_j.id): continue
@@ -44,7 +44,9 @@ class KargersMinCut(object):
             runs.append(KargersMinCut.find_min_cut(deepcopy(graph)))
         best_run = runs[0]
         for run in runs[1:]:
-            if (run['cutlength'] <= best_run['cutlength']):
+            if (run['cutlength'] < best_run['cutlength']):
+                best_run = run
+            elif (run['cutlength'] == best_run['cutlength']):
                 if (abs(len(run['alpha']) - len(run['beta'])) < abs(len(best_run['alpha']) - len(best_run['beta']))):
                     best_run = run
         return [best_run['alpha'], best_run['beta']]
