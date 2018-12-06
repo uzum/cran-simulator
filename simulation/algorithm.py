@@ -1,6 +1,7 @@
 import numpy
 import math
 from collections import namedtuple
+from kargers_min_cut import KargersMinCut
 
 BBU_serialized = namedtuple('BBU_serialized', ['id'])
 Hypervisor_serialized = namedtuple('Hypervisor_serialized', ['id'])
@@ -70,14 +71,23 @@ class Cluster():
     def has(self, baseband_unit):
         return baseband_unit in self.baseband_units
 
-    def split(self):
+    def split(self, adjacency_matrix, algorithm = "random"):
         if (len(self.baseband_units) == 1):
             raise Exception("Cannot split a cluster with length 1")
-        half = math.floor(len(self.baseband_units) / 2)
-        return [
-            Cluster(self.baseband_units[0:half]),
-            Cluster(self.baseband_units[half:])
-        ]
+
+        if (algorithm == 'random'):
+            half = math.floor(len(self.baseband_units) / 2)
+            return [
+                Cluster(self.baseband_units[0:half]),
+                Cluster(self.baseband_units[half:])
+            ]
+
+        else:
+            clusters = KargersMinCut.solve(adjacency_matrix)
+            return [
+                Cluster([bbu for self.baseband_units if bbu.id in clusters[0]]),
+                Cluster([bbu for self.baseband_units if bbu.id in clusters[1]])
+            ]
 
     def serialize(self):
         return {
@@ -138,7 +148,7 @@ class Algorithm():
 
     def get_optimal_assignment(topology):
         bins = list(map(lambda hypervisor: Bin(hypervisor, hypervisor.switch.rate), topology.hypervisors))
-        clusters = Algorithm.get_bbu_clusters(topology)
+        clusters = Algorithm.get_bbu_clusters(topology, Algorithm.get_adjacency_matrix(topology))
         elements = list(map(lambda cluster: Element(cluster, topology.get_cluster_load(cluster)), clusters))
 
         best_assignment = None
@@ -176,8 +186,9 @@ class Algorithm():
         }
 
     def get_heuristic_assignment(topology):
+        adjacency_matrix = Algorithm.get_adjacency_matrix(topology)
         bins = list(map(lambda hypervisor: Bin(hypervisor, hypervisor.switch.rate), topology.hypervisors))
-        clusters = Algorithm.get_bbu_clusters(topology)
+        clusters = Algorithm.get_bbu_clusters(topology, adjacency_matrix)
         elements = list(map(lambda cluster: Element(cluster, topology.get_cluster_load(cluster)), clusters))
         residuals = []
 
@@ -190,7 +201,7 @@ class Algorithm():
             elements = []
             for element in residuals:
                 if (len(element.cluster.baseband_units) > 1):
-                    children = element.cluster.split()
+                    children = element.cluster.split(adjacency_matrix)
                     elements.append(Element(children[0], topology.get_cluster_load(children[0])))
                     elements.append(Element(children[1], topology.get_cluster_load(children[1])))
             target_utilization += 0.1
@@ -200,7 +211,7 @@ class Algorithm():
             'residuals': elements
         }
 
-    def get_bbu_clusters(topology):
+    def get_adjacency_matrix(topology):
         bbus = {}
         for hypervisor in topology.hypervisors:
             for bbu in hypervisor.bbus:
@@ -208,14 +219,19 @@ class Algorithm():
 
         size = len(bbus)
 
-        neighbor_matrix = numpy.zeros((size, size))
+        adjacency_matrix = numpy.zeros((size, size))
 
         for i in bbus:
             for j in bbus:
-                neighbor_matrix[i][j] = topology.get_common_load(bbus[i], bbus[j])
+                adjacency_matrix[i][j] = topology.get_common_load(bbus[i], bbus[j])
 
-        # for i in range(size):
-        #     print('\t'.join(map(str, neighbor_matrix[i])))
+        return adjacency_matrix
+
+    def get_bbu_clusters(topology, adjacency_matrix):
+        bbus = {}
+        for hypervisor in topology.hypervisors:
+            for bbu in hypervisor.bbus:
+                bbus[bbu.id] = bbu
 
         clusters = []
         for i in bbus:
@@ -226,7 +242,7 @@ class Algorithm():
                 if j not in bbus: continue
                 if i == j: continue
 
-                if (neighbor_matrix[i][j] > 0):
+                if (adjacency_matrix[i][j] > 0):
                     # found a neighbor with a non-zero score
                     # find a cluster where this neighbor is present
                     for cluster in clusters:
