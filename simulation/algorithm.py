@@ -1,7 +1,7 @@
 import numpy
 import math
 from collections import namedtuple
-from kargers_min_cut import KargersMinCut
+from .kargers_min_cut import KargersMinCut
 
 BBU_serialized = namedtuple('BBU_serialized', ['id'])
 Hypervisor_serialized = namedtuple('Hypervisor_serialized', ['id'])
@@ -85,8 +85,8 @@ class Cluster():
         else:
             clusters = KargersMinCut.solve(adjacency_matrix)
             return [
-                Cluster([bbu for self.baseband_units if bbu.id in clusters[0]]),
-                Cluster([bbu for self.baseband_units if bbu.id in clusters[1]])
+                Cluster([bbu for bbu in self.baseband_units if bbu.id in clusters[0]]),
+                Cluster([bbu for bbu in self.baseband_units if bbu.id in clusters[1]])
             ]
 
     def serialize(self):

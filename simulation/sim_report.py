@@ -5,6 +5,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from .sim_parameters import SimulationParams
 
 DRIVE_OWNER = 'a.uzumcuoglu@gmail.com'
+EXPORT_STEP_REPORT = False
 
 class Spreadsheet(object):
     def __init__(self, sheet, create = False):
@@ -39,7 +40,7 @@ class Report(object):
         self.output = output
         self.simulation = simulation
         self.runs_sheet = Spreadsheet('simulation-times')
-        self.steps_sheet = Spreadsheet(output.name, create=True)
+        if (EXPORT_STEP_REPORT): self.steps_sheet = Spreadsheet(output.name, create=True)
         self.start = time.time()
 
     def print_header(self):
@@ -51,7 +52,7 @@ class Report(object):
         self.output.write('---- STEP STATS ----\n')
         steps_header = 'Keyword\tTime\tLoad\tReplication\tCost\tWait\tDelay\tDrop\tGain\t%s\n' % switch_headers
         self.output.write(steps_header)
-        self.steps_sheet.append_row(steps_header.split('\t'))
+        if (EXPORT_STEP_REPORT): self.steps_sheet.append_row(steps_header.split('\t'))
 
     def print_step_report(self):
         switch_stats = ''
@@ -72,7 +73,7 @@ class Report(object):
             switch_stats
         )
         self.output.write(step_result)
-        self.steps_sheet.append_row(step_result.split('\t'), write=False)
+        if (EXPORT_STEP_REPORT): self.steps_sheet.append_row(step_result.split('\t'), write=False)
         self.output.flush()
 
     def print_overall_report(self):
@@ -115,5 +116,6 @@ class Report(object):
             SimulationParams.CLUSTER_SIZE,
             '%.3f' % simulation_time
         ])
-        self.steps_sheet.append_batch()
-        self.steps_sheet.share()
+        if (EXPORT_STEP_REPORT):
+            self.steps_sheet.append_batch()
+            self.steps_sheet.share()

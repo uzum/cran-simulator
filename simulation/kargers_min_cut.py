@@ -34,7 +34,7 @@ class KargersMinCut(object):
         nodes = [Node(i) for i in adjacency_matrix[0]]
         for node_i in nodes:
             for node_j in nodes:
-                if (node_i == node_j) continue
+                if (node_i == node_j): continue
                 if (adjacency_matrix[node_i][node_j] > 0):
                     node_i.neighbors.append(node_j)
 
@@ -45,7 +45,7 @@ class KargersMinCut(object):
         best_run = runs[0]
         for run in runs[1:]:
             if (run['cutlength'] <= best_run['cutlength']):
-                if (abs(len(run['alpha']) - len(run['beta'])) < abs(len(best_run['alpha']) - len(best_run['beta'])))
+                if (abs(len(run['alpha']) - len(run['beta'])) < abs(len(best_run['alpha']) - len(best_run['beta']))):
                     best_run = run
         return [best_run['alpha'], best_run['beta']]
 
