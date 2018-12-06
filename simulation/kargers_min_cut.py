@@ -27,7 +27,7 @@ class Graph(object):
         return string
 
 class KargersMinCut(object):
-    def solve(adjacency_matrix, run_count):
+    def solve(adjacency_matrix, run_count = None):
         if (run_count == None):
             run_count = len(adjacency_matrix[0])
 
@@ -42,10 +42,11 @@ class KargersMinCut(object):
         runs = []
         for run in range(0, run_count):
             runs.append(KargersMinCut.find_min_cut(deepcopy(graph)))
-        best_run = { 'cutlength': float('inf') }
-        for run in runs:
-            if (run['cutlength'] < best_run['cutlength']):
-                best_run = run
+        best_run = runs[0]
+        for run in runs[1:]:
+            if (run['cutlength'] <= best_run['cutlength']):
+                if (abs(len(run['alpha']) - len(run['beta'])) < abs(len(best_run['alpha']) - len(best_run['beta'])))
+                    best_run = run
         return [best_run['alpha'], best_run['beta']]
 
     def find_min_cut(graph):

@@ -201,7 +201,7 @@ class Algorithm():
             elements = []
             for element in residuals:
                 if (len(element.cluster.baseband_units) > 1):
-                    children = element.cluster.split(adjacency_matrix)
+                    children = element.cluster.split(adjacency_matrix, algorithm='kargers')
                     elements.append(Element(children[0], topology.get_cluster_load(children[0])))
                     elements.append(Element(children[1], topology.get_cluster_load(children[1])))
             target_utilization += 0.1
