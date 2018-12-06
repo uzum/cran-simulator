@@ -7,16 +7,18 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--output')
+parser.add_argument('--cluster')
+parser.add_argument('--cluster_size')
 args = parser.parse_args()
 
 # topology parameters
-TARGET_CLUSTERS = 7
-TARGET_CLUSTER_SIZE = 4
+TARGET_CLUSTERS = int(args.cluster)
+TARGET_CLUSTER_SIZE = int(args.cluster_size)
 TARGET_NEIGHBOR_SIZE = 3
 TARGET_ARRIVAL_RATE = 25.0
 TARGET_PACKET_MEAN = 100
 TARGET_PACKET_DEV = 20
-HYPERVISORS = 5
+HYPERVISORS = round(TARGET_CLUSTERS * 0.75)
 
 # simulation parameters
 SIMULATION_TIME = 500
