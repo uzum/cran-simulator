@@ -25,6 +25,7 @@ class Topology(object):
         self.external_switch = None
 
         self.stat_history = {}
+        self.total_migrations = 0
 
         self.setup(configuration)
 
@@ -48,6 +49,7 @@ class Topology(object):
             if (subject_bbu is not None and hypervisor.id != target_hypervisor.id):
                 hypervisor.remove_baseband_unit(subject_bbu)
                 target_hypervisor.add_baseband_unit(subject_bbu)
+                self.total_migrations += 1
 
     def get_cluster_load(self, cluster):
         load = 0
@@ -71,6 +73,9 @@ class Topology(object):
 
     def get_transmission_cost(self):
         return StatHistory.get('transmission_cost', self.forwarding.get_transmission_cost())
+
+    def get_migration_count(self):
+        return StatHistory.get('migration_cost', self.total_migrations)
 
     def get_current_load(self):
         total = 0
