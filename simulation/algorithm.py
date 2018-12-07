@@ -121,9 +121,9 @@ class Algorithm():
             total_received += hypervisor.switch.packets_rec
         return total_received / self.external_switch.packets_rec
 
-    def get_assignment(topology, algorithm):
+    def get_assignment(topology, algorithm, split_algorithm):
         if algorithm == 'heuristic':
-            return Algorithm.get_heuristic_assignment(topology)
+            return Algorithm.get_heuristic_assignment(topology, split_algorithm)
         elif algorithm == 'normal':
             return Algorithm.get_normal_assignment(topology)
         elif algorithm == 'optimal':
@@ -191,7 +191,7 @@ class Algorithm():
             'residuals': []
         }
 
-    def get_heuristic_assignment(topology):
+    def get_heuristic_assignment(topology, split_algorithm):
         adjacency_matrix = Algorithm.get_adjacency_matrix(topology)
         bins = list(map(lambda hypervisor: Bin(hypervisor, hypervisor.switch.rate), topology.hypervisors))
         clusters = Algorithm.get_bbu_clusters(topology, adjacency_matrix)
@@ -207,7 +207,7 @@ class Algorithm():
             elements = []
             for element in residuals:
                 if (len(element.cluster.baseband_units) > 1):
-                    children = element.cluster.split(adjacency_matrix, algorithm='kargers')
+                    children = element.cluster.split(adjacency_matrix, split_algorithm)
                     elements.append(Element(children[0], topology.get_cluster_load(children[0])))
                     elements.append(Element(children[1], topology.get_cluster_load(children[1])))
             target_utilization += 0.1

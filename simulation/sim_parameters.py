@@ -1,4 +1,5 @@
 class SimulationParams(object):
+    SPLIT_ALGORITHM = "kargers"
     SIMULATION_TIME = 1000
     STEP_TIME = 0
     PACKET_GENERATION_FINISH = float('inf')

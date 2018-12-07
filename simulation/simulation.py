@@ -32,7 +32,7 @@ class Simulation(object):
         self.report.print_overall_report()
 
     def process_algorithm(self, algorithm):
-        assignment = Algorithm.get_assignment(self.topology, algorithm)
+        assignment = Algorithm.get_assignment(self.topology, algorithm, SimulationParams.SPLIT_ALGORITHM)
         if (len(assignment['residuals']) != 0):
             raise Exception("Failed to allocate all the baseband units into hypervisors")
 
