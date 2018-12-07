@@ -6,6 +6,7 @@ from .sim_parameters import SimulationParams
 
 DRIVE_OWNER = 'a.uzumcuoglu@gmail.com'
 EXPORT_STEP_REPORT = False
+EXPORT_TIME_REPORT = False
 
 class Spreadsheet(object):
     def __init__(self, sheet, create = False):
@@ -39,7 +40,7 @@ class Report(object):
     def __init__(self, simulation, output):
         self.output = output
         self.simulation = simulation
-        self.runs_sheet = Spreadsheet('simulation-times')
+        if (EXPORT_TIME_REPORT): self.runs_sheet = Spreadsheet('simulation-times')
         if (EXPORT_STEP_REPORT): self.steps_sheet = Spreadsheet(output.name, create=True)
         self.start = time.time()
 
@@ -108,14 +109,15 @@ class Report(object):
         simulation_time = time.time() - self.start
         self.output.write('Simulation time: %.2f ms' % simulation_time)
 
-        self.runs_sheet.append_row([
-            SimulationParams.KEYWORD,
-            self.simulation.configuration['algorithm'],
-            len(self.simulation.topology.hypervisors),
-            len(self.simulation.topology.rrhs),
-            SimulationParams.CLUSTER_SIZE,
-            '%.3f' % simulation_time
-        ])
+        if (EXPORT_TIME_REPORT):
+            self.runs_sheet.append_row([
+                SimulationParams.KEYWORD,
+                self.simulation.configuration['algorithm'],
+                len(self.simulation.topology.hypervisors),
+                len(self.simulation.topology.rrhs),
+                SimulationParams.CLUSTER_SIZE,
+                '%.3f' % simulation_time
+            ])
         if (EXPORT_STEP_REPORT):
             self.steps_sheet.append_batch()
             self.steps_sheet.share()
