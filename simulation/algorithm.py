@@ -48,10 +48,10 @@ class Element():
         return self.value < other.value
 
     def __repr__(self):
-        return "Element %d" % (self.value)
+        return "[%s]" % ', '.join(map(str, self.cluster.baseband_units))
 
     def __str__(self):
-        return "Element %d" % (self.value)
+        return "[%s]" % ', '.join(map(str, self.cluster.baseband_units))
 
     def serialize(self):
         return {
@@ -194,7 +194,10 @@ class Algorithm():
     def get_heuristic_assignment(topology, split_algorithm):
         adjacency_matrix = Algorithm.get_adjacency_matrix(topology)
         bins = list(map(lambda hypervisor: Bin(hypervisor, hypervisor.switch.rate), topology.hypervisors))
-        clusters = Algorithm.get_bbu_clusters(topology, adjacency_matrix)
+        clusters = [Cluster([])]
+        for hv in topology.hypervisors:
+            for bbu in hv.bbus:
+                clusters[0].add(bbu)
         elements = list(map(lambda cluster: Element(cluster, topology.get_cluster_load(cluster)), clusters))
         residuals = []
 
