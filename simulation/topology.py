@@ -75,7 +75,7 @@ class Topology(object):
         return StatHistory.get('transmission_cost', self.forwarding.get_transmission_cost())
 
     def get_migration_count(self):
-        return StatHistory.get('migration_cost', self.total_migrations)
+        return StatHistory.get('migration_count', self.total_migrations)
 
     def get_current_load(self):
         total = 0

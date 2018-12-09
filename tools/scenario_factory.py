@@ -3,11 +3,7 @@ import math
 import json
 import time
 import argparse
-<<<<<<< HEAD
-from plotters.topology import plot
-=======
-#from plot import plot
->>>>>>> 39e9b848d4b6cf130510526eafcec29b31147580
+#from plotters.topology import plot
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--output')
@@ -33,6 +29,7 @@ EXTERNAL_TRANSMISSION_COST = 5
 INTERNAL_TRANSMISSION_COST = 1
 EXTERNAL_TRANSMISSION_COFACTOR = 0.0001
 INTERNAL_TRANSMISSION_COFACTOR = 0.0001
+SPLIT_ALGORITHM = 'kargers'
 
 scenario = {
     'simulation': {},
@@ -64,12 +61,13 @@ def generate_parameters():
     scenario['simulation']['INTERNAL_TRANSMISSION_COST'] = INTERNAL_TRANSMISSION_COST
     scenario['simulation']['EXTERNAL_TRANSMISSION_COFACTOR'] = EXTERNAL_TRANSMISSION_COFACTOR
     scenario['simulation']['INTERNAL_TRANSMISSION_COFACTOR'] = INTERNAL_TRANSMISSION_COFACTOR
+    scenario['simulation']['SPLIT_ALGORITHM'] = SPLIT_ALGORITHM
 
 def generate_topology():
     clusters = []
     rrh_count = 0
     total_rrh_size = round(TARGET_CLUSTERS * TARGET_CLUSTER_SIZE)
-    TARGET_ARRIVAL_RATE = round(((VIRTUAL_SWITCH_RATE * HYPERVISORS) * 1.25) / (total_rrh_size * TARGET_PACKET_MEAN))
+    TARGET_ARRIVAL_RATE = round(((VIRTUAL_SWITCH_RATE * HYPERVISORS)) / (total_rrh_size * TARGET_PACKET_MEAN))
     for i in range(TARGET_CLUSTERS):
         cluster = []
         if (i == TARGET_CLUSTERS - 1):

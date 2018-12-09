@@ -51,7 +51,7 @@ class Report(object):
             switch_headers += 'OVS%dUtil.\t' % hypervisor.id
 
         self.output.write('---- STEP STATS ----\n')
-        steps_header = 'Keyword\tTime\tLoad\tReplication\tCost\tWait\tDelay\tDrop\tGain\t%s\n' % switch_headers
+        steps_header = 'Keyword\tTime\tLoad\tRepl\tCost\tMigr\tWait\tDelay\tDrop\tGain\t%s\n' % switch_headers
         self.output.write(steps_header)
         if (EXPORT_STEP_REPORT): self.steps_sheet.append_row(steps_header.split('\t'))
 
@@ -61,12 +61,13 @@ class Report(object):
             switch_stats += '%f\t' % hypervisor.switch.get_current_drop_rate()
             switch_stats += '%f\t' % self.simulation.topology.get_current_utilization(hypervisor)
 
-        step_result = '%s\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%s\n' % (
+        step_result = '%s\t%d\t%d\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%s\n' % (
             SimulationParams.KEYWORD,
             self.simulation.env.now,
             self.simulation.topology.get_current_load(),
             self.simulation.topology.get_current_replication_factor(),
             self.simulation.topology.get_transmission_cost(),
+            self.simulation.topology.get_migration_count(),
             self.simulation.topology.get_current_wait(),
             self.simulation.topology.get_current_delay(),
             self.simulation.topology.get_current_drop_rate(),

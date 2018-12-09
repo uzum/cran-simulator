@@ -139,7 +139,7 @@ class Algorithm():
             for bbu in hypervisor.bbus:
                 cluster = Cluster([bbu])
                 elements.append(Element(cluster, topology.get_cluster_load(cluster)))
-        target_utilization = 0.50
+        target_utilization = 0.75
 
         while(len(elements) > 0):
             result = Algorithm.best_fit_decreasing(bins, elements, target_utilization)
@@ -184,7 +184,7 @@ class Algorithm():
 
         while (best_assignment is None):
             recurse(bins, 0, 0)
-            target_utilization += 0.25
+            target_utilization += 0.1
 
         return {
             'bins': [Bin.deserialize(bin) for bin in best_assignment],
@@ -194,10 +194,13 @@ class Algorithm():
     def get_heuristic_assignment(topology, split_algorithm):
         adjacency_matrix = Algorithm.get_adjacency_matrix(topology)
         bins = list(map(lambda hypervisor: Bin(hypervisor, hypervisor.switch.rate), topology.hypervisors))
+        clusters = Algorithm.get_bbu_clusters(topology, Algorithm.get_adjacency_matrix(topology))
+        '''
         clusters = [Cluster([])]
         for hv in topology.hypervisors:
             for bbu in hv.bbus:
                 clusters[0].add(bbu)
+        '''
         elements = list(map(lambda cluster: Element(cluster, topology.get_cluster_load(cluster)), clusters))
         residuals = []
 
@@ -237,6 +240,20 @@ class Algorithm():
         return adjacency_matrix
 
     def get_bbu_clusters(topology, adjacency_matrix):
+        '''
+        clusters = [Cluster([])]
+        for hypervisor in topology.hypervisors:
+            for bbu in hypervisor.bbus:
+                clusters[0].add(bbu)
+        while (len(clusters) <= (1 * len(topology.hypervisors))):
+            biggest = clusters[0]
+            for cluster in clusters:
+               if (len(cluster.baseband_units) > len(biggest.baseband_units)): biggest = cluster
+            clusters.remove(biggest)
+            clusters.extend(biggest.split(adjacency_matrix, algorithm='karger'))
+
+        return clusters
+        '''
         bbus = {}
         for hypervisor in topology.hypervisors:
             for bbu in hypervisor.bbus:
