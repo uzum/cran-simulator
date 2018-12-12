@@ -20,11 +20,11 @@ for algorithm in ['optimal', 'heuristic', 'normal']:
             reader = csv.reader(csvfile, delimiter="\t")
             for row in reader:
                 markers[algorithm]['timestamps'].append(float(row[1].replace(',', '')))
-                markers[algorithm]['repl'].append(float(row[2].replace(',', '')))
-                markers[algorithm]['cost'].append(float(row[3].replace(',', '')))
-                markers[algorithm]['migr'].append(float(row[4].replace(',', '')))
-                markers[algorithm]['drop'].append(float(row[7].replace(',', '')))
-                markers[algorithm]['effc'].append(float(row[8].replace(',', '')))
+                markers[algorithm]['repl'].append(float(row[3].replace(',', '')))
+                markers[algorithm]['cost'].append(float(row[4].replace(',', '')))
+                markers[algorithm]['migr'].append(float(row[5].replace(',', '')))
+                markers[algorithm]['drop'].append(float(row[8].replace(',', '')))
+                markers[algorithm]['effc'].append(float(row[9].replace(',', '')))
 
 fig, axs = plt.subplots(nrows=5, ncols=1, figsize=(12, 30))
 for algorithm in ['optimal', 'heuristic', 'normal']:
