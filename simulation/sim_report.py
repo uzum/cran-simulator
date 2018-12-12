@@ -105,10 +105,17 @@ class Report(object):
         for hypervisor in self.simulation.topology.hypervisors:
             self.output.write('%d\t%d\t%d\t%f\n' % (hypervisor.id, hypervisor.switch.packets_rec, hypervisor.switch.packets_drop, hypervisor.switch.get_lifetime_drop_rate()))
         self.output.write('\noverall drop rate: %f\n' % self.simulation.topology.get_lifetime_drop_rate())
+        self.output.write('\noverall replication factor: %f\n' % self.simulation.topology.get_lifetime_replication_factor())
         self.output.write('-------------------------\n\n')
 
         simulation_time = time.time() - self.start
         self.output.write('Simulation time: %.2f ms' % simulation_time)
+        print('%s\t%d\t%f\t%f' % (
+            self.output.name,
+            len(self.simulation.topology.rrhs),
+            self.simulation.topology.get_lifetime_replication_factor(),
+            self.simulation.topology.get_lifetime_drop_rate()
+        ))
 
         if (EXPORT_TIME_REPORT):
             self.runs_sheet.append_row([

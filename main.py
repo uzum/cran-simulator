@@ -25,4 +25,3 @@ elif (args.folder):
                 with open(args.folder + '/' + conf_file + '.out', 'w+') as fout:
                     sim = Simulation(configuration, fout)
                     sim.run()
-                    print('completed %s' % conf_file)
