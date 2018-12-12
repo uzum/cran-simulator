@@ -9,6 +9,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--output')
 parser.add_argument('--cluster')
 parser.add_argument('--cluster_size')
+parser.add_argument('--connected', default=False)
 args = parser.parse_args()
 
 # topology parameters
@@ -100,6 +101,9 @@ def generate_topology():
                 random.shuffle(indexes)
             # append its serving station with the same id
             rrh['baseband_units'].append(rrh['id'])
+        if (args.connected):
+            if (i > 0):
+                cluster[0]['baseband_units'].append(clusters[i-1][0]['id'])
 
     bbu_per_hypervisor = math.ceil(rrh_count / HYPERVISORS)
     current_hypervisor = scenario['topology']['hypervisors'][0]
