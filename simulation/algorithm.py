@@ -1,4 +1,5 @@
 import numpy
+import random
 import math
 from collections import namedtuple
 from .kargers_min_cut import KargersMinCut
@@ -82,6 +83,7 @@ class Cluster():
             ]
 
         if (algorithm == 'random'):
+            random.shuffle(self.baseband_units)
             half = math.floor(len(self.baseband_units) / 2)
             return [
                 Cluster(self.baseband_units[0:half]),
